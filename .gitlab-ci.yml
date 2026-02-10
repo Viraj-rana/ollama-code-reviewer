@@ -1,0 +1,47 @@
+image: node:20
+
+stages:
+  - review
+  - deploy
+
+ai_code_review:
+  stage: review
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - echo "🚀 Starting WinSolution AI Review for GitLab..."
+    
+    # 1. Install Dependencies
+    - npm ci
+    
+    # 2. Fetch Target Branch for Diffing
+    # GitLab runners often use shallow clones. We must fetch the target branch to compare against.
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    
+    # 3. Generate Diff
+    # Creates a diff between the target branch and the current commit (HEAD)
+    - git diff origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD > pr_diff.txt
+    
+    # 4. Run Analysis Script
+    - node scripts/ci-review.js
+  
+  # Ensure these variables are set in Settings > CI/CD > Variables
+  variables:
+    API_KEY: $GEMINI_API_KEY
+    SUPABASE_URL: $SUPABASE_URL
+    SUPABASE_KEY: $SUPABASE_KEY
+    TELEGRAM_BOT_TOKEN: $TELEGRAM_BOT_TOKEN
+    TELEGRAM_CHAT_ID: $TELEGRAM_CHAT_ID
+
+pages:
+  stage: deploy
+  script:
+    - npm ci
+    - npm run build
+    - mv dist public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "Testing-updates"

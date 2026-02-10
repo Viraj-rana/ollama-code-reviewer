@@ -1,0 +1,5 @@
+{
+  "name": "WinSolution AI",
+  "description": "An AI-powered automated code review MVP that analyzes code diffs against custom style guides and generates structured reports.",
+  "requestFramePermissions": []
+}
