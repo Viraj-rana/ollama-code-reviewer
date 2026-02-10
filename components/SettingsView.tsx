@@ -159,7 +159,7 @@ export const SettingsView: React.FC = () => {
                </div>
                
                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                 <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -></a>
+                 <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -</a>
                  <button 
                    onClick={handleVerifyGithub}
                    disabled={ghStatus === 'verifying' || !githubToken}
@@ -200,7 +200,7 @@ export const SettingsView: React.FC = () => {
                </div>
                
                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                 <a href="https://gitlab.com/-/profile/personal_access_tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -></a>
+                 <a href="https://gitlab.com/-/profile/personal_access_tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -</a>
                  <button 
                    onClick={handleVerifyGitlab}
                    disabled={glStatus === 'verifying' || !gitlabToken}
