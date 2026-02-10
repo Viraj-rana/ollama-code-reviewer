@@ -12,7 +12,7 @@ WinSolution AI — это интеллектуальный симулятор «
 This application is **exclusively for WinSolution Engineering team members**. Unauthorized access or use by external parties is strictly prohibited.
 Данное приложение предназначено **исключительно для членов инженерной команды WinSolution**. Несанкционированный доступ или использование третьими лицами строго запрещены.
 
-![Sync Settings cloudbase](/images/img2.png)
+![Sync Settings cloudbase](/images/img2.png.png)
 
 
 ##  How to Run Locally
