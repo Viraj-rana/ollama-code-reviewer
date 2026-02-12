@@ -101,10 +101,10 @@ export const SettingsView: React.FC = () => {
         </div>
 
         {/* Auto-Pilot Configuration */}
-        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800 mb-8 relative overflow-hidden">
              <div className="flex justify-between items-start relative z-10">
                  <div className="flex gap-4">
-                     <div className={`p-3 rounded-xl transition-colors ${autoPilotEnabled ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-white dark:bg-slate-800 text-slate-400'}`}>
+                     <div className={`p-3 w-12 h-12 rounded-xl transition-colors ${autoPilotEnabled ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white dark:bg-slate-800 text-slate-400'}`}>
                          <SparklesIcon className={`w-6 h-6 ${autoPilotEnabled ? 'animate-pulse' : ''}`} />
                      </div>
                      <div>
@@ -122,7 +122,7 @@ export const SettingsView: React.FC = () => {
                  <div className="flex flex-col items-end gap-2">
                     <button 
                         onClick={toggleAutoPilot}
-                        className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${autoPilotEnabled ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${autoPilotEnabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}
                     >
                         <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${autoPilotEnabled ? 'translate-x-7' : 'translate-x-1'}`} />
                     </button>
@@ -159,14 +159,14 @@ export const SettingsView: React.FC = () => {
                </div>
                
                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                 <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -></a>
+                 <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -</a>
                  <button 
                    onClick={handleVerifyGithub}
                    disabled={ghStatus === 'verifying' || !githubToken}
                    className={`w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${ghStatus === 'valid' ? 'bg-green-600 text-white' : 'bg-slate-900 dark:bg-slate-700 text-white hover:bg-black dark:hover:bg-slate-600'}`}
                  >
                    {ghStatus === 'verifying' ? <RefreshCwIcon className="w-3 h-3 animate-spin" /> : (ghStatus === 'valid' ? <CheckCircleIcon className="w-3 h-3" /> : 'Verify & Save')}
-                   {ghStatus === 'verifying' ? 'Verifying...' : (ghStatus === 'valid' ? 'Verified' : 'Save Token')}
+                   {ghStatus === 'verifying' ? 'Verifying...' : (ghStatus === 'valid' ? 'Verified' : '  Token')}
                  </button>
                </div>
                {ghStatus === 'invalid' && <p className="text-xs text-red-500 font-bold flex items-center gap-1 animate-in fade-in"><XCircleIcon className="w-3 h-3" /> Invalid Token</p>}
@@ -200,14 +200,14 @@ export const SettingsView: React.FC = () => {
                </div>
                
                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                 <a href="https://gitlab.com/-/profile/personal_access_tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -></a>
+                 <a href="https://gitlab.com/-/profile/personal_access_tokens" target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline font-medium">Generate Token -</a>
                  <button 
                    onClick={handleVerifyGitlab}
                    disabled={glStatus === 'verifying' || !gitlabToken}
                    className={`w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${glStatus === 'valid' ? 'bg-green-600 text-white' : 'bg-slate-900 dark:bg-slate-700 text-white hover:bg-black dark:hover:bg-slate-600'}`}
                  >
                    {glStatus === 'verifying' ? <RefreshCwIcon className="w-3 h-3 animate-spin" /> : (glStatus === 'valid' ? <CheckCircleIcon className="w-3 h-3" /> : 'Verify & Save')}
-                   {glStatus === 'verifying' ? 'Verifying...' : (glStatus === 'valid' ? 'Verified' : 'Save Token')}
+                   {glStatus === 'verifying' ? 'Verifying...' : (glStatus === 'valid' ? 'Verified' : '  Token')}
                  </button>
                </div>
                {glStatus === 'invalid' && <p className="text-xs text-red-500 font-bold flex items-center gap-1 animate-in fade-in"><XCircleIcon className="w-3 h-3" /> Invalid Token</p>}

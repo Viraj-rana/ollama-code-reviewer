@@ -6,7 +6,8 @@ import {
   XCircleIcon, 
   AlertTriangleIcon, 
   FileCodeIcon, 
-  SparklesIcon, 
+  SparklesIcon,
+  ActiveIcon,
   RefreshCwIcon,
   CopyIcon,
   DownloadIcon,
@@ -268,7 +269,7 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
               
               {/* Rating Scorecard */}
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-                 <div className="flex items-center gap-2 mb-4">
+                 <div className="flex h-4 w-4 items-center gap-2 mb-4">
                     <SparklesIcon className="w-5 h-5 text-purple-500" />
                     <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">{isRussian ? 'Оценка качества кода' : 'AI Code Quality Scorecard'}</h3>
                  </div>

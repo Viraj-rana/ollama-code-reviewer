@@ -18,7 +18,8 @@ import {
   DownloadIcon,
   LinkIcon,
   InfoIcon,
-  SparklesIcon
+  SparklesIcon,
+  ActiveIcon   //active mr
 } from './components/Icons';
 import { ReviewOutput } from './components/ReviewOutput';
 import { ProjectAnalysisOutput } from './components/ProjectAnalysisOutput';
@@ -41,8 +42,18 @@ const TELEGRAM_CONFIG = {
 };
 
 const HistoryIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>
-);
+ <svg viewBox="0 0 1024 1024"
+      width="24"
+      height="24"
+   xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor">
+      <g id="SVGRepo_bgCarrier"
+       strokeWidth="0"></g>
+       <g id="SVGRepo_tracerCarrier" 
+       strokeLinecap="round" strokeLinejoin="round"></g>
+       <g id="SVGRepo_iconCarrier"><path d="M512 1024C229.7 1024 0 794.3 0 512S229.7 0 512 0s512 229.7 512 512-229.7 512-512 512z m0-938.7C276.7 85.3 85.3 276.7 85.3 512S276.7 938.7 512 938.7 938.7 747.3 938.7 512 747.3 85.3 512 85.3z" fill="#3688FF"></path><path d="M640 682.7c-9.6 0-19.3-3.2-27.3-9.9l-128-106.7c-9.7-8.1-15.4-20.1-15.4-32.8V384c0-23.6 19.1-42.7 42.7-42.7s42.7 19.1 42.7 42.7v129.4l112.6 93.9c18.1 15.1 20.5 42 5.5 60.1-8.5 10-20.6 15.3-32.8 15.3z" fill="#5F6379">
+  </path></g></svg>);
+
 
 const DEFAULT_STYLE_GUIDE = `## Style & Logic Guide
 
@@ -660,7 +671,7 @@ const App: React.FC = () => {
       <nav className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 min-h-16 py-3 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveMode('review')}>
-            <div className="bg-blue-600 p-2 rounded-lg">
+            <div className="bg-none-600 p-2 rounded-lg">
               <RefreshCwIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-xl tracking-tight">WinSolution <span className="text-blue-600">AI</span></span>
@@ -772,10 +783,10 @@ const App: React.FC = () => {
               {!isAnalyzing && !reviewResult && !projectResult && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col flex-1 min-h-[500px]">
                   <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap gap-2">
-                    <button onClick={() => setInputMode('manual')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === 'manual' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}>Workspace</button>
-                    <button onClick={() => setInputMode('auto')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === 'auto' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}><SparklesIcon className="w-3 h-3 inline mr-1" /> Linked Jobs</button>
-                    <button onClick={() => setInputMode('github')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === 'github' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}><GitHubIcon className="w-3 h-3 inline mr-1" /> GitHub</button>
-                    <button onClick={() => setInputMode('gitlab')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === 'gitlab' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}><GitLabIcon className="w-3 h-3 inline mr-1" /> GitLab</button>
+                    <button onClick={() => setInputMode('manual')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === "manual" ? "bg-yellow-500 dark:bg-slate-700 shadow-sm text-white" : "text-slate-500"}`}>Workspace</button>
+                    <button onClick={() => setInputMode('auto')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === "auto" ? "bg-green-600 dark:bg-slate-700 shadow-sm text-white" : "text-slate-500"}`}><ActiveIcon className="w-3 h-3 inline mr-1" /> Active MR's</button>
+                    <button onClick={() => setInputMode('github')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === "github" ? "bg-sky-700 dark:bg-slate-700 shadow-sm text-white" : "text-slate-500"}`}><GitHubIcon className="w-3 h-3 inline mr-1" /> GitHub</button>
+                    <button onClick={() => setInputMode('gitlab')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${inputMode === "gitlab" ? "bg-orange-500 dark:bg-slate-600 shadow-sm text-white" : "text-slate-500"}'}`}><GitLabIcon className="w-3 h-3 inline mr-1" /> GitLab</button>
                   </div>
 
                   {inputMode === 'manual' ? (

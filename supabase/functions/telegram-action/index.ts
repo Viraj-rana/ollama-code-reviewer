@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+declare const Deno:any;
 
-const TELEGRAM_BOT_TOKEN = (Deno as any).env.get("TELEGRAM_BOT_TOKEN");
-const GITLAB_PAT = (Deno as any).env.get("GITLAB_PAT");
+const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
+const GITLAB_PAT = Deno.env.get("GITLAB_PAT");
 
-serve(async (req) => {
+serve(async (req: Request) => {
   try {
     const update = await req.json();
 
