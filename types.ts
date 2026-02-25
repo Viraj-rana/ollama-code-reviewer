@@ -45,6 +45,7 @@ export interface HistoryEntry {
   status: ReviewStatus;
   summary: string;
   result: ReviewResult;
+  codeDiff?: string; // Storage of the exact code diff that was analyzed
 }
 
 export interface ProjectAnalysisResult {

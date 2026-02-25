@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Environment variables (SECURITY: Keep out of git)
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# IDE
+*.iml
+
+# Build artifacts
+build/
+*.tgz

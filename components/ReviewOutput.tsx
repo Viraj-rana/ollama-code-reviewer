@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ReviewResult, ReviewStatus, Severity, ReviewIssue } from '../types';
+import { DiffViewer } from './DiffViewer';
 import { 
   CheckCircleIcon, 
   XCircleIcon, 
@@ -89,7 +90,7 @@ interface ReviewOutputProps {
 }
 
 export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, styleGuide, originalCode }) => {
-  const [activeTab, setActiveTab] = useState<'visual' | 'markdown' | 'impact'>('visual');
+  const [activeTab, setActiveTab] = useState<'visual' | 'markdown' | 'impact' | 'diff'>('visual');
   const [severityFilter, setSeverityFilter] = useState<'ALL' | Severity>('ALL');
   const [loadingFixes, setLoadingFixes] = useState<Record<number, boolean>>({});
   const [suggestedFixes, setSuggestedFixes] = useState<Record<number, string>>({});
@@ -209,8 +210,20 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xl transition-colors w-full max-w-full">
-      <div className={`p-6 border-b flex flex-col md:flex-row justify-between items-start gap-4 transition-colors ${getStatusBg(displayResult.status)}`}>
-        <div className="flex-1 min-w-0 w-full">
+      {/* commented out to enhance the header section with full width summary and diff stats */}
+
+      {/* <div className={`p-6 border-b flex flex-col md:flex-row justify-between items-start gap-4 transition-colors ${getStatusBg(displayResult.status)}`}>
+        <div className="flex-1 min-w-0 w-full"> */}
+
+      {/* new line added here to enhance the header section with full width summary and diff stats */}
+         {/* Header Section with enhanced Full Width Summary layout */}
+      <div className={`p-6 border-b transition-colors ${getStatusBg(displayResult.status)}`}>
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+          <div className="flex-1 min-w-0">
+
+
+
+          
           <div className="flex items-center gap-3 mb-2">
             <button 
               onClick={onReset} 
@@ -224,16 +237,34 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
               {isRussian ? (displayResult.status === ReviewStatus.APPROVE ? 'Пайплайн пройден' : 'Требуются изменения') : (displayResult.status === ReviewStatus.APPROVE ? 'Pipeline Passed' : 'Pipeline Failed')}
             </h2>
           </div>
-          <div className="flex items-center gap-4 text-xs font-mono mb-2">
+          
+          {/* commented this line to enhance the Summary header Section */ }
+          {/* <div className="flex items-center gap-4 text-xs font-mono mb-2"> */}
+
+            {/* here is new line added */}
+          <div className="flex items-center gap-4 text-xs font-mono pl-1">
+               <span className="bg-white/50 dark:bg-black/20 px-2 py-1 rounded flex items-center gap-2 border border-black/5 dark:border-white/5">
+
+
              <span className="text-green-600 dark:text-green-400 font-bold">+{diffStats.additions}</span>
              <span className="text-slate-300">|</span>
              <span className="text-red-500 dark:text-red-400 font-bold">-{diffStats.deletions}</span>
+
+             </span>
+             
              <span className="text-slate-500 uppercase tracking-widest text-[10px]">Lines Modified</span>
           </div>
-          <p className="text-slate-600 dark:text-slate-300 font-medium break-words">{displayResult.summary}</p>
+          </div>
+
+              {/* This needs to be commented out enhancing the summary contaier */}
+          {/* <p className="text-slate-600 dark:text-slate-300 font-medium break-words">{displayResult.summary}</p>
         </div>
         <div className="flex flex-col items-start md:items-end gap-3 shrink-0 w-full md:w-auto">
-          <div className="flex flex-wrap justify-end gap-2 w-full">
+          <div className="flex flex-wrap justify-end gap-2 w-full"> */}
+
+           <div className="flex flex-col items-end gap-3 shrink-0 w-full md:w-auto">
+            <div className="flex gap-2">
+
             <button 
               onClick={() => setShowFullModal(true)}
               className="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all bg-blue-600 text-white shadow-md hover:bg-blue-700 flex items-center gap-2 active:scale-95 whitespace-nowrap"
@@ -241,19 +272,24 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
               <ShareIcon className="w-3 h-3" />
               {isRussian ? 'Полный отчет' : 'Full Report'}
             </button>
+
+              </div>
+
             <div className="flex gap-1 bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-lg">
-                {['visual', 'markdown', 'impact'].map((tab) => (
+                {['visual', 'markdown', 'diff', 'impact'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab as any)}
                     className={`px-3 py-1.5 rounded-md text-[10px] uppercase tracking-wider font-bold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                   >
-                    {tab === 'visual' ? (isRussian ? 'Отчет' : 'Report') : tab === 'markdown' ? (isRussian ? 'Комментарий' : 'Comment') : (isRussian ? 'Карта' : 'Impact Map')}
+                    {tab === 'visual' ? (isRussian ? 'Отчет' : 'Report') : tab === 'markdown' ? (isRussian ? 'Комментарий' : 'Comment') : tab === 'diff' ? (isRussian ? 'Code Diff' : 'Code Diff') : (isRussian ? 'Карта' : 'Impact Map')}
                   </button>
                 ))}
             </div>
           </div>
-          <button 
+        </div>
+          
+          {/* <button 
             onClick={handleToggleLanguage}
             disabled={isTranslating}
             className={`self-end flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border whitespace-nowrap ${isRussian ? 'bg-blue-600 text-white border-blue-500' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}
@@ -261,7 +297,22 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
             {isTranslating ? <RefreshCwIcon className="w-3 h-3 animate-spin" /> : (isRussian ? 'RU active' : 'Translate to RU')}
           </button>
         </div>
+  
       </div>
+      </div> */}
+
+      {/* Full Width Summary Container */}
+        <div className="w-full bg-white/40 dark:bg-black/10 rounded-xl p-5 border border-black/5 dark:border-white/5 backdrop-blur-sm">
+        {/* <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 flex items-center gap-2 opacity-70">
+              <SparklesIcon className="w-3 h-3" />
+              AI Executive Summary
+           </h3> */}
+           <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed text-sm md:text-base break-words">
+              {displayResult.summary}
+           </p>
+        </div>
+         </div>
+
 
       <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900 w-full">
         {activeTab === 'visual' && (
@@ -269,9 +320,9 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
               
               {/* Rating Scorecard */}
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-                 <div className="flex h-4 w-4 items-center gap-2 mb-4">
+                 <div className="flex items-center gap-2 mb-4">
                     <SparklesIcon className="w-5 h-5 text-purple-500" />
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">{isRussian ? 'Оценка качества кода' : 'AI Code Quality Scorecard'}</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">AI Code Quality Scorecard</h3>
                  </div>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -463,6 +514,18 @@ export const ReviewOutput: React.FC<ReviewOutputProps> = ({ result, onReset, sty
                     }}>{displayResult.markdownReport}</ReactMarkdown>
                 </div>
             </div>
+        )}
+
+        {activeTab === 'diff' && (
+          <div className="w-full animate-in fade-in slide-in-from-right-4 duration-300">
+            {originalCode && originalCode.trim() ? (
+              <DiffViewer diff={originalCode} isDark={document.documentElement.classList.contains('dark')} />
+            ) : (
+              <div className="p-12 text-center text-slate-400 italic bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800">
+                No code diff available for this review.
+              </div>
+            )}
+          </div>
         )}
       </div>
 

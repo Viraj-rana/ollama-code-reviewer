@@ -16,10 +16,10 @@
     "sb:secrets": "echo 'Error: Do not store secrets in package.json. Run [npx supabase secrets set KEY=VALUE] in your terminal directly.'"
   },
   "dependencies": {
-    "@google/genai": "^1.30.0",
     "@supabase/supabase-js": "^2.39.3",
     "diff": "^8.0.3",
     "dotenv": "^16.4.1",
+    "highlight.js": "^11.11.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0"

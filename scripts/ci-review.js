@@ -1,10 +1,24 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
 // --- CONFIGURATION ---
-const API_KEY = process.env.API_KEY; // Gemini Key
+
+// Backend review API (Python + Ollama / Qwen)
+const REVIEW_API_URL = process.env.REVIEW_API_URL || 'http://localhost:8000/review';
+
+// High-level style guide for CI reviews (can be overridden via env)
+const DEFAULT_STYLE_GUIDE = (process.env.CI_STYLE_GUIDE || `
+SEVERITY RULES:
+- CRITICAL: Hardcoded credentials, fatal logic errors (crashes, infinite loops), or major security issues.
+- WARNING: Significant correctness, performance, or design problems that are not fatal.
+- INFO: Naming, documentation, minor refactors, and non-blocking improvements.
+
+STATUS RULES:
+- If ANY CRITICAL issue exists => status MUST be "REQUEST_CHANGES".
+- If only WARNING or INFO issues exist => status SHOULD be "APPROVE".
+- If no issues exist => status MUST be "APPROVE".
+`).trim();
 
 // Use provided credentials as default if env vars not present
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://innhtkqrvjqiuuetzxqh.supabase.co';
@@ -36,10 +50,10 @@ const escapeHtml = (unsafe) => {
 };
 
 async function run() {
-  console.log("🚀 Starting WinSolution AI Automated Review...");
+  console.log(" Starting WinSolution AI Automated Review...");
 
-  if (!API_KEY) { console.error("❌ Missing API_KEY"); process.exit(1); }
   if (!SUPABASE_URL || !SUPABASE_KEY) { console.error("❌ Missing Supabase Credentials"); process.exit(1); }
+  if (!REVIEW_API_URL) { console.error("❌ Missing REVIEW_API_URL"); process.exit(1); }
 
   // 1. Get PR/MR Data
   let prData = { title: "Manual Test", user: { login: "tester" }, number: 0, head: { repo: { name: "test-repo" } } };
@@ -57,14 +71,14 @@ async function run() {
         prUrl = event.pull_request.html_url || "";
         repoUrl = event.repository ? event.repository.html_url : "";
         projectId = event.repository ? event.repository.full_name : "";
-        console.log(`📂 Processing GitHub PR #${prData.number}: ${prData.title}`);
+        console.log(` Processing GitHub PR #${prData.number}: ${prData.title}`);
       }
     } catch (e) {
-      console.error("⚠️ Could not read GitHub Event path, using mock data.");
+      console.error(" Could not read GitHub Event path, using mock data.");
     }
   } else if (GITLAB_CI) {
     platform = "gitlab";
-    console.log("🦊 Detected GitLab CI Environment");
+    console.log(" Detected GitLab CI Environment");
     // Map GitLab variables to our internal data structure
     prData = {
         title: CI_MERGE_REQUEST_TITLE || "Untitled Merge Request",
@@ -77,7 +91,7 @@ async function run() {
     repoUrl = process.env.CI_PROJECT_URL || "";
     // Prefer Numeric ID for Telegram callback limit (64 bytes), fallback to name
     projectId = CI_PROJECT_ID || CI_PROJECT_NAME; 
-    console.log(`📂 Processing GitLab MR #${prData.number}: ${prData.title}`);
+    console.log(` Processing GitLab MR #${prData.number}: ${prData.title}`);
   }
 
   // 2. Read Code Diff (In CI, we assume 'git diff' output is piped or fetched)
@@ -85,7 +99,7 @@ async function run() {
   try {
     codeDiff = fs.readFileSync('pr_diff.txt', 'utf8');
   } catch (e) {
-    console.log("⚠️ pr_diff.txt not found. Using dummy diff for testing.");
+    console.log(" pr_diff.txt not found. Using dummy diff for testing.");
     codeDiff = `
     // DUMMY DIFF
     function insecure() {
@@ -98,48 +112,36 @@ async function run() {
     codeDiff = codeDiff.substring(0, 45000) + "\n...[Truncated]";
   }
 
-  // 3. AI Analysis
-  console.log("🧠 Analyzing with Gemini...");
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
-  
-  const systemInstruction = `
-    You are a World-Class Senior Principal Engineer. Analyze the code diff.
-    
-    SEVERITY RULES:
-    - CRITICAL: Hardcoded API keys/credentials, or fatal logic errors (crashes, infinite loops).
-    - INFO: Naming conventions, Type hinting, Docstrings, and Error Handling (bare except).
-    - WARNING: All other code quality issues.
-    
-    STATUS DETERMINATION RULES:
-    1. If ANY issue is detected with severity 'CRITICAL' -> status must be 'REQUEST_CHANGES'.
-    2. If issues are only 'WARNING' or 'INFO' -> status must be 'APPROVE'.
-    3. If no issues -> status must be 'APPROVE'.
-
-    Output strictly in JSON.
-    Format requirements:
-    - summary: string
-    - status: "APPROVE" | "REQUEST_CHANGES"
-    - issues: array of objects { message, severity: "CRITICAL"|"WARNING"|"INFO", codeSnippet }
-    - markdownReport: string
-    - impactGraphMermaid: string (start with graph TD)
-  `;
-
-  const prompt = `Review this code diff:\n${codeDiff}`;
+  // 3. AI Analysis (via Python backend + Ollama / Qwen)
+  console.log(" Analyzing with Qwen backend...");
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0, // Deterministic output
-        seed: 42,       // Fixed seed for consistency
-        responseMimeType: "application/json"
-      }
+    const response = await fetch(REVIEW_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        styleGuide: DEFAULT_STYLE_GUIDE,
+        codeDiff,
+        blockOnWarning: true,
+      }),
     });
 
-    const resultText = response.text;
-    const result = JSON.parse(resultText);
+    if (!response.ok) {
+      let message = `Backend error (${response.status})`;
+      try {
+        const data = await response.json();
+        if (data && data.detail) {
+          message = data.detail;
+        }
+      } catch {
+        // ignore parse errors, use generic message
+      }
+      throw new Error(message);
+    }
+
+    const result = await response.json();
     
     console.log(`✅ Analysis Complete. Status: ${result.status}`);
 
@@ -154,11 +156,11 @@ async function run() {
           mrNumber: prData.number
       });
     } else {
-      console.log("ℹ️ Telegram skipped (Missing credentials)");
+      console.log("Telegram skipped (Missing credentials)");
     }
 
     // 5. Save to Supabase
-    console.log("💾 Saving to Database...");
+    console.log(" Saving to Database...");
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     
     const { error } = await supabase.from('reviews').insert({
@@ -168,7 +170,8 @@ async function run() {
       project_name: prData.title,
       status: result.status,
       summary: result.summary,
-      result_json: result
+      result_json: result,
+      code_diff: codeDiff // Store the code diff in database
     });
 
     if (error) {
@@ -241,10 +244,10 @@ async function sendTelegram(token, chatId, author, project, result, links = {}) 
     
     if (!res.ok) {
         const text = await res.text();
-        console.error(`❌ Telegram API Error (${res.status}):`, text);
+        console.error(` Telegram API Error (${res.status}):`, text);
         // Retry logic for plain text if HTML fails (omitting buttons to be safe)
         if (text.includes("parse")) {
-            console.log("⚠️ Retrying Telegram message as plain text...");
+            console.log(" Retrying Telegram message as plain text...");
             delete body.parse_mode;
             delete body.reply_markup;
             await fetch(url, { 
@@ -262,3 +265,4 @@ async function sendTelegram(token, chatId, author, project, result, links = {}) 
 }
 
 run();
+

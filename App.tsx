@@ -19,17 +19,20 @@ import {
   LinkIcon,
   InfoIcon,
   SparklesIcon,
-  ActiveIcon   //active mr
+  ActiveIcon,
+   //active mr
 } from './components/Icons';
 import { ReviewOutput } from './components/ReviewOutput';
 import { ProjectAnalysisOutput } from './components/ProjectAnalysisOutput';
 import { HistoryView } from './components/HistoryView';
 import { SettingsView } from './components/SettingsView';
-import { analyzeCode, analyzeRepository } from './services/geminiService';
+import { analyzeCode, analyzeRepository, translateTextToRussian } from './services/geminiService';
 import { sendReviewToTelegram } from './services/telegramService';
 import { fetchOpenMrs, fetchMergeRequestDiff } from './services/gitPlatformService';
 import { ReviewResult, ProjectAnalysisResult, HistoryEntry, ReviewStatus, ExternalMR } from './types';
 import { supabase, isSupabaseConfigured } from './services/supabaseClient';
+import { debugLog, debugError, debugWarn } from './utils/secureLogger';
+import { saveHistoryToLocalStorage, loadHistoryFromLocalStorage, validateHistoryEntry } from './utils/storageUtils';
 
 /** 
  * INTERNAL SYSTEM CONFIGURATION
@@ -37,7 +40,7 @@ import { supabase, isSupabaseConfigured } from './services/supabaseClient';
  */
 const DEFAULT_SYSTEM_AUTHOR = 'HE009999';
 const TELEGRAM_CONFIG = {
-  chatId: '-1003841579486', // Publicly knowing the destination channel ID is generally safe
+  chatId: '-31003841579486', // Publicly knowing the destination channel ID is generally safe
   enabled: true
 };
 
@@ -125,14 +128,30 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [currentAuthor, setCurrentAuthor] = useState(DEFAULT_SYSTEM_AUTHOR);
   const [isSyncingDb, setIsSyncingDb] = useState(false);
+  const [isRussian, setIsRussian] = useState(() => {
+    return localStorage.getItem('winsolution_language') === 'ru';
+  });
 
   // Update ref whenever state changes
   useEffect(() => { isAnalyzingRef.current = isAnalyzing; }, [isAnalyzing]);
+  
+  // Save language preference
+  useEffect(() => {
+    localStorage.setItem('winsolution_language', isRussian ? 'ru' : 'en');
+  }, [isRussian]);
+
+  // Translation helper
+  const t = (en: string, ru: string) => isRussian ? ru : en;
 
   useEffect(() => {
     // 1. Load Local History
-    const savedHistory = localStorage.getItem('review_history');
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
+    const loaded = loadHistoryFromLocalStorage();
+    if (loaded.length > 0) {
+      debugLog(`[Init] Loaded ${loaded.length} entries from localStorage`);
+      setHistory(loaded);
+    } else {
+      debugLog('[Init] No saved history found in localStorage');
+    }
 
     const savedToken = localStorage.getItem('winsolution_pat');
     if (savedToken) setAccessToken(savedToken);
@@ -153,7 +172,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('review_history', JSON.stringify(history));
+    // Persist history to localStorage whenever it changes
+    if (history.length > 0 || localStorage.getItem('review_history')) {
+      const saved = saveHistoryToLocalStorage(history);
+      debugLog(`[History] Saved ${history.length} entries to localStorage (success: ${saved})`);
+    }
   }, [history]);
 
   useEffect(() => {
@@ -196,7 +219,7 @@ const App: React.FC = () => {
 
   const runAutoPilotCycle = async () => {
       console.log("🤖 Auto-Pilot: Waking up...");
-      addLog("🤖 Auto-Pilot: Starting background scan...");
+      addLog(t("🤖 Auto-Pilot: Starting background scan...", "🤖 Автопилот: Начинается фоновое сканирование..."));
       
       localStorage.setItem('winsolution_last_autopilot_run', Date.now().toString());
 
@@ -204,7 +227,7 @@ const App: React.FC = () => {
       const glToken = localStorage.getItem('winsolution_gitlab_token');
 
       if (!ghToken && !glToken) {
-          addLog("Auto-Pilot: No tokens found. Pausing.");
+          addLog(t("Auto-Pilot: No tokens found. Pausing.", "Автопилот: Токены не найдены. Пауза."));
           return;
       }
 
@@ -219,13 +242,13 @@ const App: React.FC = () => {
           const pendingMrs = mrs.filter(mr => !reviewedIds.has(mr.id));
 
           if (pendingMrs.length === 0) {
-              addLog(`Auto-Pilot: No new MRs found (Scanned ${mrs.length}). Sleeping.`);
+              addLog(t(`Auto-Pilot: No new MRs found (Scanned ${mrs.length}). Sleeping.`, `Автопилот: Новые MR не найдены (сканировано ${mrs.length}). Сон.`));
               return;
           }
 
           // C. Pick the first one
           const targetMr = pendingMrs[0];
-          addLog(`Auto-Pilot: Selected job "${targetMr.title}" (#${targetMr.number})`);
+          addLog(t(`Auto-Pilot: Selected job "${targetMr.title}" (#${targetMr.number})`, `Автопилот: Выбрана работа "${targetMr.title}" (#${targetMr.number})`));
 
           // D. Process Review (This sets isAnalyzing to true via internal logic, but we do it manually to be safe)
           setIsAnalyzing(true);
@@ -243,7 +266,7 @@ const App: React.FC = () => {
               setSelectedMr(targetMr);
 
               // D3. Analyze
-              addLog("Auto-Pilot: Running AI Analysis...");
+              addLog(t("Auto-Pilot: Running AI Analysis...", "Автопилот: Запуск анализа ИИ..."));
               const result = await analyzeCode(styleGuide, diff, blockOnWarning);
               
               // D4. Save & Notify
@@ -254,49 +277,108 @@ const App: React.FC = () => {
                 projectName: targetMr.title,
                 status: result.status,
                 summary: result.summary,
-                result: result
+                result: result,
+                codeDiff: diff // Store the exact code diff that was analyzed
               };
               
-              setHistory(prev => [newEntry, ...prev]);
+              console.log('[Auto-Pilot] Adding to history:', newEntry);
+              setHistory(prev => {
+                const updated = [newEntry, ...prev];
+                console.log(`[Auto-Pilot] History updated. Total entries: ${updated.length}`, updated);
+                return updated;
+              });
               setReviewResult(result);
 
               if (TELEGRAM_CONFIG.enabled && isSupabaseConfigured()) {
-                  addLog("Auto-Pilot: Sending Telegram notification...");
-                  await sendReviewToTelegram(
-                      TELEGRAM_CONFIG.chatId,
-                      targetMr.author,
-                      targetMr.title,
-                      result,
-                      targetMr
-                  );
+                  addLog(t("Auto-Pilot: Sending Telegram notification...", "Автопилот: Отправка уведомления в Telegram..."));
+                  try {
+                    // Translate summary to Russian for Telegram
+                    const russianSummary = await translateTextToRussian(result.summary);
+                    const resultForTelegram = {
+                      ...result,
+                      summary: russianSummary
+                    };
+                    await sendReviewToTelegram(
+                        TELEGRAM_CONFIG.chatId,
+                        targetMr.author,
+                        targetMr.title,
+                        resultForTelegram,
+                        targetMr
+                    );
+                  } catch (telegramErr) {
+                    console.error('Auto-Pilot Telegram error:', telegramErr);
+                  }
               }
 
               if (isSupabaseConfigured() && supabase) {
-                await supabase.from('reviews').insert({
-                  id: newEntry.id,
-                  timestamp: newEntry.timestamp,
-                  author: newEntry.author,
-                  project_name: newEntry.projectName,
-                  status: newEntry.status,
-                  summary: newEntry.summary,
-                  result_json: newEntry.result
-                });
+                try {
+                  console.log('[Auto-Pilot] Inserting to Supabase:', {
+                    id: newEntry.id,
+                    project_name: newEntry.projectName,
+                    code_diff_length: newEntry.codeDiff?.length || 0
+                  });
+                  
+                  const { data, error } = await supabase.from('reviews').insert({
+                    id: newEntry.id,
+                    timestamp: newEntry.timestamp,
+                    author: newEntry.author,
+                    project_name: newEntry.projectName,
+                    status: newEntry.status,
+                    summary: newEntry.summary,
+                    result_json: newEntry.result,
+                    code_diff: newEntry.codeDiff
+                  });
+                  
+                  if (error) {
+                    console.error('[Auto-Pilot] Supabase insert error:', error);
+                    // Check if error is due to missing code_diff column
+                    if (error.message?.includes('code_diff')) {
+                      console.warn('[Auto-Pilot] code_diff column missing, retrying without it...');
+                      addLog(t('⚠️ code_diff column not found. Retrying without code diff...', '⚠️ Столбец code_diff не найден. Повторная попытка без диффа кода...'));
+                      // Retry without code_diff
+                      const { error: retryError } = await supabase.from('reviews').insert({
+                        id: newEntry.id,
+                        timestamp: newEntry.timestamp,
+                        author: newEntry.author,
+                        project_name: newEntry.projectName,
+                        status: newEntry.status,
+                        summary: newEntry.summary,
+                        result_json: newEntry.result
+                      });
+                      if (retryError) {
+                        console.error('[Auto-Pilot] Retry failed:', retryError);
+                        addLog(t(`Supabase Error: ${retryError.message}`, `Ошибка Supabase: ${retryError.message}`));
+                      } else {
+                        console.log('[Auto-Pilot] Saved to Supabase (without code_diff)');
+                        addLog(t('✅ Saved to Cloud DB. (Add code_diff column to Supabase to store code diffs)', '✅ Сохранено в облачную БД. (Добавьте столбец code_diff в Supabase для сохранения дифов кода)'));
+                      }
+                    } else {
+                      addLog(t(`Supabase Error: ${error.message}`, `Ошибка Supabase: ${error.message}`));
+                    }
+                  } else {
+                    console.log('[Auto-Pilot] Successfully saved to Supabase');
+                    addLog(t('✅ Auto-Pilot: Saved review to Cloud DB.', '✅ Автопилот: Обзор сохранён в облачную БД.'));
+                  }
+                } catch (supabaseErr: any) {
+                  console.error('[Auto-Pilot] Supabase exception:', supabaseErr);
+                  addLog(t(`Supabase Exception: ${supabaseErr.message}`, `Исключение Supabase: ${supabaseErr.message}`));
+                }
               }
 
               // D5. Mark as Reviewed
               reviewedIds.add(targetMr.id);
               localStorage.setItem('winsolution_reviewed_mrs', JSON.stringify(Array.from(reviewedIds)));
               
-              addLog("Auto-Pilot: Cycle Complete. Sleeping for 5 mins.");
+              addLog(t("Auto-Pilot: Cycle Complete. Sleeping for 5 mins.", "Автопилот: Цикл завершён. Спит 5 минут."));
 
           } catch (err: any) {
-              addLog(`Auto-Pilot Error on ${targetMr.title}: ${err.message}`);
+              addLog(t(`Auto-Pilot Error on ${targetMr.title}: ${err.message}`, `Ошибка Автопилота на ${targetMr.title}: ${err.message}`));
           } finally {
               setIsAnalyzing(false);
           }
 
       } catch (err: any) {
-          addLog(`Auto-Pilot Global Error: ${err.message}`);
+          addLog(t(`Auto-Pilot Global Error: ${err.message}`, `Глобальная ошибка Автопилота: ${err.message}`));
           setIsAnalyzing(false);
       }
   };
@@ -323,19 +405,24 @@ const App: React.FC = () => {
           projectName: row.project_name,
           status: row.status as ReviewStatus,
           summary: row.summary,
-          result: row.result_json as ReviewResult
+          result: row.result_json as ReviewResult,
+          codeDiff: row.code_diff // Restore the code diff from database
         }));
+
+        console.log('[Cloud Sync] Fetched cloud entries:', cloudEntries);
 
         // Merge with local history, avoiding duplicates by ID
         setHistory(prev => {
           const existingIds = new Set(prev.map(p => p.id));
           const newEntries = cloudEntries.filter(c => !existingIds.has(c.id));
-          return [...newEntries, ...prev].sort((a, b) => 
+          const merged = [...newEntries, ...prev].sort((a, b) => 
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
           );
+          console.log(`[Cloud Sync] Merged history. New entries: ${newEntries.length}, Total: ${merged.length}`, merged);
+          return merged;
         });
         
-        if (data.length > 0) addLog(`Synced ${data.length} automated reviews from Cloud DB.`);
+        if (data.length > 0) addLog(t(`Synced ${data.length} automated reviews from Cloud DB.`, `Синхронизировано ${data.length} автоматических обзоров из облачной БД.`));
       }
     } catch (err) {
       console.error("Cloud Sync Error", err);
@@ -375,10 +462,10 @@ const App: React.FC = () => {
     setInputMode('auto');
     
     try {
-      addLog("Starting aggregated fetch from connected platforms...");
+      addLog(t("Starting aggregated fetch from connected platforms...", "Начало агрегированной выборки с подключённых платформ..."));
       const mrs = await fetchOpenMrs(ghTokenToUse, glTokenToUse);
       setAutoMrs(mrs);
-      addLog(`Fetch complete. Found ${mrs.length} active jobs.`);
+      addLog(t(`Fetch complete. Found ${mrs.length} active jobs.`, `Выборка завершена. Найдено ${mrs.length} активных работ.`));
     } catch (err: any) {
       setError(`Sync Error: ${err.message}`);
     } finally {
@@ -402,7 +489,7 @@ const App: React.FC = () => {
     setLogs([]); // Clear logs for fresh analysis view
     
     try {
-      addLog("Initializing AI Pipeline...");
+      addLog(t("Initializing AI Pipeline...", "Инициализация конвейера ИИ..."));
       const result = await analyzeCode(styleGuide, diffToAnalyze, blockOnWarning);
       setReviewResult(result);
       
@@ -414,38 +501,98 @@ const App: React.FC = () => {
         projectName,
         status: result.status,
         summary: result.summary,
-        result: result
+        result: result,
+        codeDiff: diffToAnalyze // Store the exact code diff that was analyzed
       };
 
-      setHistory(prev => [newEntry, ...prev]);
+      debugLog('[Manual Review] Adding to history:', newEntry);
+      setHistory(prev => {
+        const updated = [newEntry, ...prev];
+        debugLog(`[Manual Review] History updated. Total entries: ${updated.length}`);
+        return updated;
+      });
 
       // TELEGRAM NOTIFICATION (Now Secure)
       if (TELEGRAM_CONFIG.enabled && isSupabaseConfigured()) {
-        addLog("Sending report to Telegram (via Secure Backend)...");
-        await sendReviewToTelegram(
-            TELEGRAM_CONFIG.chatId,
-            mrToUse ? mrToUse.author : currentAuthor,
-            projectName,
-            result,
-            mrToUse // Pass context for links
-        );
-        addLog("Notification sent.");
+        addLog(t("Sending report to Telegram (via Secure Backend)...", "Отправка отчёта в Telegram (через защищённый серверный интерфейс)..."));
+        try {
+          // Translate summary to Russian for Telegram
+          const russianSummary = await translateTextToRussian(result.summary);
+          const resultForTelegram = {
+            ...result,
+            summary: russianSummary
+          };
+          await sendReviewToTelegram(
+              TELEGRAM_CONFIG.chatId,
+              mrToUse ? mrToUse.author : currentAuthor,
+              projectName,
+              resultForTelegram,
+              mrToUse // Pass context for links
+          );
+          addLog(t("Notification sent.", "Уведомление отправлено."));
+        } catch (telegramErr) {
+          console.error('Manual Review Telegram error:', telegramErr);
+          addLog(t("Telegram notification failed to send.", "Ошибка отправки уведомления в Telegram."));
+        }
       } else if (TELEGRAM_CONFIG.enabled && !isSupabaseConfigured()) {
-        addLog("Telegram skipped: Supabase not configured.");
+        addLog(t("Telegram skipped: Supabase not configured.", "Telegram пропущен: Supabase не настроен."));
       }
       
       // Save to Supabase (Optional for Manual Runs)
       if (isSupabaseConfigured() && supabase) {
-        addLog("Syncing result to Cloud DB...");
-        await supabase.from('reviews').insert({
-          id: newEntry.id,
-          timestamp: newEntry.timestamp,
-          author: newEntry.author,
-          project_name: newEntry.projectName,
-          status: newEntry.status,
-          summary: newEntry.summary,
-          result_json: newEntry.result
-        });
+        addLog(t("Syncing result to Cloud DB...", "Синхронизация результата с облачной БД..."));
+        try {
+          console.log('[Manual Review] Inserting to Supabase:', {
+            id: newEntry.id,
+            project_name: newEntry.projectName,
+            code_diff_length: newEntry.codeDiff?.length || 0
+          });
+          
+          const { data, error } = await supabase.from('reviews').insert({
+            id: newEntry.id,
+            timestamp: newEntry.timestamp,
+            author: newEntry.author,
+            project_name: newEntry.projectName,
+            status: newEntry.status,
+            summary: newEntry.summary,
+            result_json: newEntry.result,
+            code_diff: newEntry.codeDiff
+          });
+          
+          if (error) {
+            console.error('[Manual Review] Supabase insert error:', error);
+            // Check if error is due to missing code_diff column
+            if (error.message?.includes('code_diff')) {
+              console.warn('[Manual Review] code_diff column missing, retrying without it...');
+              addLog(t('⚠️ code_diff column not found. Retrying without code diff...', '⚠️ Столбец code_diff не найден. Повторная попытка без диффа кода...'));
+              // Retry without code_diff
+              const { error: retryError } = await supabase.from('reviews').insert({
+                id: newEntry.id,
+                timestamp: newEntry.timestamp,
+                author: newEntry.author,
+                project_name: newEntry.projectName,
+                status: newEntry.status,
+                summary: newEntry.summary,
+                result_json: newEntry.result
+              });
+              if (retryError) {
+                console.error('[Manual Review] Retry failed:', retryError);
+                addLog(t(`Supabase Error: ${retryError.message}`, `Ошибка Supabase: ${retryError.message}`));
+              } else {
+                console.log('[Manual Review] Saved to Supabase (without code_diff)');
+                addLog(t('✅ Review saved to Cloud DB. (Add code_diff column to Supabase to store code diffs)', '✅ Обзор сохранён в облачную БД. (Добавьте столбец code_diff в Supabase для сохранения дифов кода)'));
+              }
+            } else {
+              addLog(t(`Supabase Error: ${error.message}`, `Ошибка Supabase: ${error.message}`));
+            }
+          } else {
+            console.log('[Manual Review] Successfully saved to Supabase');
+            addLog(t('✅ Review successfully synced to Cloud DB.', '✅ Обзор успешно синхронизирован с облачной БД.'));
+          }
+        } catch (supabaseErr: any) {
+          console.error('[Manual Review] Supabase exception:', supabaseErr);
+          addLog(t(`Supabase Exception: ${supabaseErr.message}`, `Исключение Supabase: ${supabaseErr.message}`));
+        }
       }
 
     } catch (err: any) {
@@ -459,7 +606,7 @@ const App: React.FC = () => {
     setSelectedMr(mr);
     setIsFetchingDiff(true);
     setLogs([]);
-    addLog(`Synchronizing job: ${mr.title} (#${mr.number})`);
+    addLog(t(`Synchronizing job: ${mr.title} (#${mr.number})`, `Синхронизация работы: ${mr.title} (#${mr.number})`));
     
     try {
       const storedGh = localStorage.getItem('winsolution_github_token');
@@ -685,6 +832,9 @@ const App: React.FC = () => {
               <button onClick={fetchCloudHistory} className={`p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${isSyncingDb ? 'animate-spin' : ''}`} title="Sync with Cloud">
                 <RefreshCwIcon className="w-5 h-5 text-blue-500" />
               </button>
+              <button onClick={() => setIsRussian(!isRussian)} className={`p-2 rounded-full transition-colors ${isRussian ? 'bg-blue-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Toggle Russian/English">
+                <span className="text-xs font-bold">{isRussian ? 'RU' : 'EN'}</span>
+              </button>
               <button onClick={() => setActiveMode('settings')} className={`p-2 rounded-full transition-colors ${activeMode === 'settings' ? 'bg-blue-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Settings">
                 <SettingsIcon className="w-5 h-5" />
               </button>
@@ -706,7 +856,7 @@ const App: React.FC = () => {
            </div>
         ) : activeMode === 'history' ? (
           <div className="lg:col-span-12">
-            <HistoryView history={history} onSelect={(e) => { setReviewResult(e.result); setActiveMode('review'); }} onDelete={(id) => setHistory(h => h.filter(e => e.id !== id))} onClear={() => setHistory([])} />
+            <HistoryView history={history} onSelect={(e) => { setReviewResult(e.result); setCodeDiff(e.codeDiff || DEFAULT_CODE_DIFF); setActiveMode('review'); }} onDelete={(id) => setHistory(h => h.filter(e => e.id !== id))} onClear={() => setHistory([])} />
           </div>
         ) : (
           <>

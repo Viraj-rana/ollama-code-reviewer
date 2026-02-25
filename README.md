@@ -19,8 +19,18 @@ This application is **exclusively for WinSolution Engineering team members**. Un
 
 ### Prerequisites
 - **Node.js**: Version 18.x or higher.
-- **API Key**: A compatible AI API key.
--**CLOUD INTEGRATED**: Backend Cloud integrate.
+- **Python**: Version 3.10 or higher.
+- **Ollama**: Installed locally with the `qwen2.5-coder:1.5b-base` model pulled.
+- **Backend**: FastAPI service from the `backend/` directory running and reachable.
+
+### Environment configuration
+- **Frontend (Vite)**:
+  - Set `VITE_REVIEW_API_URL` to your backend base URL (for example: `http://localhost:8000`).
+- **CI / scripts**:
+  - Set `REVIEW_API_URL` to `<backend-url>/review` (for example: `http://backend:8000/review` in CI).
+- **Backend (Python)**:
+  - Optional: `OLLAMA_URL` (default `http://localhost:11434`).
+  - Optional: `MODEL_NAME` (default `qwen2.5-coder:1.5b-base`).
 
 ### Installation Steps
 1. **Extract/Clone** the project files into a directory.
@@ -45,11 +55,11 @@ This application is **exclusively for WinSolution Engineering team members**. Un
   The **scripts/ci-review.js** runs immediately after the diff is generated.
   Detection: It detects the GITLAB_CI environment variable.
   Metadata: It successfully grabs the author (GITLAB_USER_LOGIN), the title (CI_MERGE_REQUEST_TITLE), and the ID.
-  Analysis: It reads the pr_diff.txt file and sends it to Gemini.
+  Analysis: It reads the pr_diff.txt file and sends it to the Python backend, which calls the local Ollama model (`qwen2.5-coder:1.5b-base`) to perform the AI review.
 
   3. The Output (The Integration)
 
-  Pass/Fail: If Gemini finds CRITICAL issues, the script exits with code 1, which tells GitLab to mark the pipeline as Failed, preventing the merge (if you have that setting enabled in GitLab).
+  Pass/Fail: If the review finds CRITICAL issues, the script exits with code 1, which tells GitLab to mark the pipeline as Failed, preventing the merge (if you have that setting enabled in GitLab).
   Reporting: It successfully pushes the data to Supabase (so your dashboard updates) and sends the Telegram alert.
   The Only "Manual" Step Remaining
   For this to work "100%", you must perform one configuration step in GitLab:
@@ -93,7 +103,8 @@ We use Supabase Edge Functions to handle Telegram interactions. The CLI is inclu
 ##  Core Dependencies
 This application is built with a modern, performant tech stack:
 - **React 19**: Frontend UI framework.
-- **@google/genai**: Official SDK for Gemini AI integration.
+- **FastAPI** + **httpx**: Python backend that orchestrates reviews and talks to Ollama.
+- **Ollama** + **Qwen2.5-Coder (1.5B, base)**: Local LLM used for code review, repo analysis, translations, and fix suggestions.
 - **Tailwind CSS**: Utility-first styling with native Dark Mode support.
 - **React Markdown**: Renders the AI's professional architectural reports.
 - **Vite**: Ultra-fast build tool and dev server.
