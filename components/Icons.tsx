@@ -1,3 +1,4 @@
+//all icons files here we can modify them anytime with need
 import React from "react";
 
 export const PlayIcon = ({ className }: { className?: string }) => (
