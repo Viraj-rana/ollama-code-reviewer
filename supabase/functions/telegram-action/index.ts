@@ -1,3 +1,5 @@
+//this is the telegram action code
+//it triggers the telegram actions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 declare const Deno:any;
 
