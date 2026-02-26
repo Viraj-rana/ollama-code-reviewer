@@ -1,3 +1,4 @@
+//project analysis output information will be here 
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ProjectAnalysisResult } from '../types';
