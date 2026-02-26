@@ -40,12 +40,12 @@ import { saveHistoryToLocalStorage, loadHistoryFromLocalStorage, validateHistory
  */
 const DEFAULT_SYSTEM_AUTHOR = 'HE009999';
 const TELEGRAM_CONFIG = {
-  chatId: '-31003841579486', // Publicly knowing the destination channel ID is generally safe
+  chatId: '-1003841579486', // Publicly knowing the destination channel ID is generally safe
   enabled: true
 };
 
 const HistoryIcon = ({ className }: { className?: string }) => (
- <svg viewBox="0 0 1024 1024"
+     <svg viewBox="0 0 1024 1024"
       width="24"
       height="24"
    xmlns="http://www.w3.org/2000/svg"
@@ -55,7 +55,8 @@ const HistoryIcon = ({ className }: { className?: string }) => (
        <g id="SVGRepo_tracerCarrier" 
        strokeLinecap="round" strokeLinejoin="round"></g>
        <g id="SVGRepo_iconCarrier"><path d="M512 1024C229.7 1024 0 794.3 0 512S229.7 0 512 0s512 229.7 512 512-229.7 512-512 512z m0-938.7C276.7 85.3 85.3 276.7 85.3 512S276.7 938.7 512 938.7 938.7 747.3 938.7 512 747.3 85.3 512 85.3z" fill="#3688FF"></path><path d="M640 682.7c-9.6 0-19.3-3.2-27.3-9.9l-128-106.7c-9.7-8.1-15.4-20.1-15.4-32.8V384c0-23.6 19.1-42.7 42.7-42.7s42.7 19.1 42.7 42.7v129.4l112.6 93.9c18.1 15.1 20.5 42 5.5 60.1-8.5 10-20.6 15.3-32.8 15.3z" fill="#5F6379">
-  </path></g></svg>);
+  </path></g></svg>
+  );
 
 
 const DEFAULT_STYLE_GUIDE = `## Style & Logic Guide

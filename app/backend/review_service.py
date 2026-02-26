@@ -14,7 +14,7 @@ from .models import (
     ReviewStatus,
     Severity,
 )
-from .ollama_client import generate_json, generate_text, repair_json
+from .gemini_client import generate_json, generate_text, repair_json
 
 
 CHUNK_SIZE = 25_000

@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import os
+import asyncio
 from typing import Any
-
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+from dotenv import load_dotenv
 
+env_path = Path(__file__).parent / '.env'
+load_dotenv(env_path)
 from .models import (
     GenerateFixRequest,
     GenerateFixResponse,
@@ -21,9 +26,34 @@ from .review_service import (
     translate_review_result,
     translate_text_to_language,
 )
+from .telegram_bot import (
+    process_telegram_update,
+    start_telegram_polling,
+    send_telegram_message,
+    fetch_merge_request_diff,
+    format_review_for_telegram,
+    DEFAULT_STYLE_GUIDE,
+)
 
+#global variable to track the polling task
+polling_task = None
 
-app = FastAPI(title="WinSolution AI Review Backend", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """lifespan context manager to start and stop the Telegram polling task."""
+    global polling_task
+    # start telegram polling in the background
+    polling_task = asyncio.create_task(start_telegram_polling())
+    yield
+    # stop polling on shutdown
+    if polling_task:
+        polling_task.cancel()
+        try:
+            await polling_task
+        except asyncio.CancelledError:
+            pass
+
+app = FastAPI(title="WinSolution AI Review Backend", version="1.0.0", lifespan=lifespan)
 
 # Simple, permissive CORS by default so the SPA can talk to this service.
 allowed_origins = os.getenv("REVIEW_API_CORS_ORIGINS", "*").split(",")
@@ -109,3 +139,68 @@ if __name__ == "__main__":  # pragma: no cover
         reload=True,
     )
 
+# --- Telegram Bot Endpoints ---
+
+from pydantic import BaseModel
+
+class TelegramWebhookRequest(BaseModel):
+    """Model for Telegram webhook updates."""
+    update_id: int
+    message: dict | None = None
+    edited_message: dict | None = None
+    callback_query: dict | None = None
+
+
+class TelegramReviewRequest(BaseModel):
+    """Model for direct MR review request via API."""
+    mr_url: str
+    chat_id: str | None = None
+
+
+@app.post("/telegram/webhook")
+async def telegram_webhook(update: dict):
+    """Handle Telegram webhook updates."""
+    try:
+        await process_telegram_update(update)
+        return {"ok": True}
+    except Exception as exc:
+        print(f"Telegram webhook error: {exc}")
+        return {"ok": False, "error": str(exc)}
+
+
+@app.post("/telegram/review")
+async def telegram_review(request: TelegramReviewRequest):
+    """
+    Trigger a code review for a merge request and optionally send to Telegram.
+    """
+    try:
+        # Fetch the diff
+        diff, error = await fetch_merge_request_diff(request.mr_url)
+        
+        if not diff:
+            raise HTTPException(status_code=400, detail=error)
+        
+        # Perform code review
+        review_request = ReviewRequest(
+            styleGuide=DEFAULT_STYLE_GUIDE,
+            codeDiff=diff,
+            blockOnWarning=True
+        )
+        result = await analyze_code(review_request)
+        
+        # Send to Telegram if chat_id provided
+        chat_id = request.chat_id or os.getenv("TELEGRAM_GROUP_ID")
+        if chat_id:
+            message = format_review_for_telegram(result, request.mr_url)
+            await send_telegram_message(chat_id, message)
+        
+        return {
+            "success": True,
+            "result": result.model_dump(),
+            "telegram_sent": bool(chat_id)
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        msg = f"Telegram review failed: {exc}"
+        raise HTTPException(status_code=500, detail=msg)
