@@ -20,7 +20,7 @@ import {
   InfoIcon,
   SparklesIcon,
   ActiveIcon,
-   //active mr
+   //active mr here
 } from './components/Icons';
 import { ReviewOutput } from './components/ReviewOutput';
 import { ProjectAnalysisOutput } from './components/ProjectAnalysisOutput';
