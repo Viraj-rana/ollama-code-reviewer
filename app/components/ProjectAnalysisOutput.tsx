@@ -8,7 +8,7 @@ interface ProjectAnalysisOutputProps {
   result: ProjectAnalysisResult;
   onReset: () => void;
 }
-
+//mermaidgraph
 const MermaidGraph: React.FC<{ chart: string }> = ({ chart }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
