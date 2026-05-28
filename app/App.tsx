@@ -58,7 +58,7 @@ const HistoryIcon = ({ className }: { className?: string }) => (
   </path></g></svg>
   );
 
-
+//defaultstyleguiderules
 const DEFAULT_STYLE_GUIDE = `## Style & Logic Guide
 
 ### CRITICAL (Severity: CRITICAL)
