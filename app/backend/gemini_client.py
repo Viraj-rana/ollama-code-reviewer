@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-# Load .env from the backend directory
+# Load .env from the from directory
 env_path = Path(__file__).parent / '.env'
 load_dotenv(env_path)
 
