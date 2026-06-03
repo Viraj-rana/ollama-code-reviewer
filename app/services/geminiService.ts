@@ -34,7 +34,6 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// --- MAIN EXPORTED FUNCTIONS ---
 
 export const analyzeCode = async (
   styleGuide: string,
