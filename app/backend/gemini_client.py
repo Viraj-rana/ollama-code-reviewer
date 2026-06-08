@@ -9,7 +9,7 @@ env_path = Path(__file__).parent / '.env'
 load_dotenv(env_path)
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_NAME = "gemini-3-flash-preview"  # Using stable model for local
+MODEL_NAME = "gemini-1.5-flash"  # Use a valid stable model
 
 # Configure the API
 if GOOGLE_API_KEY:
@@ -31,7 +31,8 @@ async def generate_text(system_prompt: str, user_prompt: str) -> str:
             system_instruction=system_prompt
         )
        
-        response = model.generate_content(user_prompt)
+        # Use async version to avoid blocking
+        response = await model.generate_content_async(user_prompt)
        
         if not response or not response.text:
             raise GeminiError("Empty response from Gemini API")
