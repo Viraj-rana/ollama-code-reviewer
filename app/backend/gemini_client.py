@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-# load .env from the same directory
+# load .env from the from directory
 env_path = Path(__file__).parent / '.env'
 load_dotenv(env_path)
 
@@ -43,7 +43,7 @@ async def generate_text(system_prompt: str, user_prompt: str) -> str:
 
 async def generate_json(
     system_prompt: str,
-    user_prompt: str,
+user_prompt: str,
 ) -> str:
     """
     Convenience wrapper for prompts that must return ONLY JSON as plain text.
