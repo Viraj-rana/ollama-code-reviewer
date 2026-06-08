@@ -42,7 +42,7 @@ async def generate_text(system_prompt: str, user_prompt: str) -> str:
 
 async def generate_json(
     system_prompt: str,
-    user_prompt: str,
+user_prompt: str,
 ) -> str:
     """
     Convenience wrapper for prompts that must return ONLY JSON as plain text.
