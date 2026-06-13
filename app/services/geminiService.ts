@@ -1,4 +1,4 @@
-//main llm file
+//main llm code
 import { ReviewResult, ProjectAnalysisResult, ReviewIssue } from "../types";
 
 const API_BASE =
