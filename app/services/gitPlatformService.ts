@@ -132,7 +132,7 @@ export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Prom
     if (mr.platform === 'github') {
         const [owner, repo] = mr.repo.split('/');
         
-        // Fetch Diff
+        // Fetch Diff code
         const diffRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${mr.number}`, {
             headers: { 
                 Authorization: `token ${token}`, 
