@@ -36,7 +36,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 
 
 export const analyzeCode = async (
-  styleGuide: string,
+    styleGuide: string,
   codeDiff: string,
   blockOnWarning: boolean
 ): Promise<ReviewResult> => {
