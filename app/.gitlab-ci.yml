@@ -11,7 +11,7 @@ ai_code_review:
   script:
     - echo "🚀 Starting WinSolution AI Review for GitLab..."
     
-    # 1. Install Dependencies
+    # 1. Install Dependencies and packages
     - npm ci
     
     # 2. Fetch Target Branch for Diffing
