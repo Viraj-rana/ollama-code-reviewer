@@ -13,7 +13,7 @@ AI-powered code review application that reviews GitHub/GitLab merge requests via
 - **Backend**: FastAPI (Python)
 - **LLM**: Gemini 3 Flash Preview (via emergentintegrations library)
 - **Telegram Bot**: Python httpx with polling
-- **Frontend**: React + TypeScript + Vite
+- **Frontend**: React + TypeScript + Vite + lucid
 
 ## Core Architecture
 ```
