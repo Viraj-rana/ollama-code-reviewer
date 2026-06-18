@@ -35,7 +35,7 @@ from .telegram_bot import (
     DEFAULT_STYLE_GUIDE,
 )
 
-#global variable to track the polling task
+#global variable to track the polling tasks
 polling_task = None
 
 @asynccontextmanager
