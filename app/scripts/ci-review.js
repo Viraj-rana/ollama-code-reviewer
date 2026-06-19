@@ -4,7 +4,7 @@ import path from 'path';
 
 
 
-// Backend review API (Python + Ollama / Qwen)
+// Backend review API (Python + Ollama / qwen)
 const REVIEW_API_URL = process.env.REVIEW_API_URL || 'http://localhost:8000/review';
 
 // High-level style guide for CI reviews (can be overridden via env)
