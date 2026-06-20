@@ -141,7 +141,7 @@ const App: React.FC = () => {
     localStorage.setItem('winsolution_language', isRussian ? 'ru' : 'en');
   }, [isRussian]);
 
-  // Translation helper
+  // Translation function helper
   const t = (en: string, ru: string) => isRussian ? ru : en;
 
   useEffect(() => {
