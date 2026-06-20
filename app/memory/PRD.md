@@ -1,5 +1,5 @@
 
-Action: file_editor create /app/memory/PRD.md --file-text "# WinSolution AI Code Review Bot - PRD
+Action: file_editor create /app/memory/PRD.md --file-text "# WinSolution AI Code Review Bot 
 
 ## Project Overview
 AI-powered code review application that reviews GitHub/GitLab merge requests via Telegram bot integration.
