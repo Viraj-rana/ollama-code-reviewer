@@ -9,7 +9,7 @@ const getEnv = (): Record<string, string> => {
     // @ts-ignore - import.meta.env is Vite-specific
     return import.meta.env || {};
   } catch (e) {
-    return {};
+   return {};
   }
 };
 
