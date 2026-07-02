@@ -245,7 +245,7 @@ async function sendTelegram(token, chatId, author, project, result, links = {}) 
     if (!res.ok) {
         const text = await res.text();
         console.error(` Telegram API Error (${res.status}):`, text);
-        // Retry logic for plain text if HTML fails (omitting buttons to be safe)
+        // retry logic for plain text if HTML fails (omitting buttons to be safe)
         if (text.includes("parse")) {
             console.log(" Retrying Telegram message as plain text...");
             delete body.parse_mode;
