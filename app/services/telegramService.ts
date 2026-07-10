@@ -39,13 +39,13 @@ export const sendReviewToTelegram = async (
   const safeAuthor = escapeHtml(author);
   const safeSummary = escapeHtml(russianSummary);
 
-  // --- 3. BUILD HEADER (Screenshot 1 Style) ---
+  // --- 3. builder header ---
   let headerText = `<b>${emojiStatus} WinSolution Review: ${safeProject}</b>\n\n`;
   headerText += `<b>Author:</b> ${safeAuthor}\n`;
   headerText += `<b>Status:</b> ${result.status}\n`;
   headerText += `<b>Score:</b> ${result.rating?.overall || 'N/A'}/100\n\n`;
   
-  // Russian Summary (placed before details as per Screenshot 1 style)
+  // Russian Summary 
   headerText += `<b>Резюме:</b>\n<i>${safeSummary}</i>\n\n`;
   
   headerText += `<b>Metrics:</b>\n`;
