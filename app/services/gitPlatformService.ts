@@ -32,7 +32,7 @@ export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: stri
   // GitHub Fetch Logic: User -> Repos -> Pulls
   if (githubToken) {
     try {
-      // Fetch user's repos (Limit to 20 recently updated to avoid browser rate limits)
+      // fetch user's repos (Limit to 20 recently updated to avoid browser rate limits)
       const reposRes = await fetch("https://api.github.com/user/repos?per_page=20&sort=updated&type=all", {
         headers: { Authorization: `token ${githubToken}` }
       });
