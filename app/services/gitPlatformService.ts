@@ -76,7 +76,7 @@ export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: stri
     }
   }
 
-  // GitLab Fetch Logic: Projects -> Merge Requests
+  // gitLab Fetch Logic: Projects -> Merge Requests
   if (gitlabToken) {
     try {
       // Fetch projects where user is a member
