@@ -11,7 +11,7 @@ export const sendReviewToTelegram = async (
 ) => {
   if (!chatId) return;
 
-  // --- 1. PREPARE METRICS & HELPERS ---
+  // --- 1. PREPARE METRICS  - ---
   const criticals = result.issues.filter(i => i.severity === Severity.CRITICAL).length;
   const warnings = result.issues.filter(i => i.severity === Severity.WARNING).length;
   const infos = result.issues.filter(i => i.severity === Severity.INFO).length;

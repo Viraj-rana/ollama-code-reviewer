@@ -1,4 +1,4 @@
-
+//mainapp system
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   AlertTriangleIcon, 
@@ -58,7 +58,7 @@ const HistoryIcon = ({ className }: { className?: string }) => (
   </path></g></svg>
   );
 
-
+//defaultstyleguiderules
 const DEFAULT_STYLE_GUIDE = `## Style & Logic Guide
 
 ### CRITICAL (Severity: CRITICAL)
@@ -141,7 +141,7 @@ const App: React.FC = () => {
     localStorage.setItem('winsolution_language', isRussian ? 'ru' : 'en');
   }, [isRussian]);
 
-  // Translation helper
+  // Translation function helper
   const t = (en: string, ru: string) => isRussian ? ru : en;
 
   useEffect(() => {
