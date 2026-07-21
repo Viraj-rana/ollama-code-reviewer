@@ -2,9 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
-// --- CONFIGURATION ---
 
-// Backend review API (Python + Ollama / Qwen)
+
+// backend review API (Python + Ollama / qwen)
 const REVIEW_API_URL = process.env.REVIEW_API_URL || 'http://localhost:8000/review';
 
 // High-level style guide for CI reviews (can be overridden via env)
@@ -245,7 +245,7 @@ async function sendTelegram(token, chatId, author, project, result, links = {}) 
     if (!res.ok) {
         const text = await res.text();
         console.error(` Telegram API Error (${res.status}):`, text);
-        // Retry logic for plain text if HTML fails (omitting buttons to be safe)
+        // retry logic for plain text if HTML fails (omitting buttons to be safe)
         if (text.includes("parse")) {
             console.log(" Retrying Telegram message as plain text...");
             delete body.parse_mode;

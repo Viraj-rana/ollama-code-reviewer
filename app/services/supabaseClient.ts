@@ -1,15 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-// NOTE: These should ideally be in .env files (VITE_SUPABASE_URL, VITE_SUPABASE_KEY)
-// For this MVP, we will try to read them from env, or allow manual entry in settings if needed.
+// for this MVP's, we will try to read them from env, or allow manual entry in settings.
 // Users must add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to their .env file.
+
 
 const getEnv = (): Record<string, string> => {
   try {
     // @ts-ignore - import.meta.env is Vite-specific
     return import.meta.env || {};
   } catch (e) {
-    return {};
+   return {};
   }
 };
 
