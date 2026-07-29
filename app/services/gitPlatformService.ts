@@ -29,7 +29,7 @@ export const verifyGitLabToken = async (token: string): Promise<boolean> => {
 export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: string | null): Promise<ExternalMR[]> => {
   let allMrs: ExternalMR[] = [];
 
-  // gitHub fetch logic: user -> repos -> Pulls
+  // gitHub fetch logic: user  repos  pulls
   if (githubToken) {
     try {
       // fetch user's repos (Limit to 20 recently updated to avoid browser rate limits)
