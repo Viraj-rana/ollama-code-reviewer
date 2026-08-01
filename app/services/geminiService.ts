@@ -1,4 +1,4 @@
-//main llm 
+//main llm function
 import { ReviewResult, ProjectAnalysisResult, ReviewIssue } from "../types";
 
 const API_BASE =
