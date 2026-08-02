@@ -36,7 +36,7 @@ import { saveHistoryToLocalStorage, loadHistoryFromLocalStorage, validateHistory
 
 /** 
  * INTERNAL SYSTEM CONFIGURATION
- * SECURITY UPDATE: Bot Token removed. It is now stored securely in Supabase Secrets.
+ * SECURITY UPDATE: Bot token removed. It is now stored securely in Supabase Secrets.
  */
 const DEFAULT_SYSTEM_AUTHOR = 'usernametg';
 const TELEGRAM_CONFIG = {
