@@ -25,7 +25,7 @@ export const sendReviewToTelegram = async (
       .replace(/'/g, "&#039;");
   };
 
-  // --- 2. EXTRACT RUSSIAN SUMMARY ---
+  // extract russian summary 
   let russianSummary = result.summary;
   const splitMarker = "🇷🇺 **Резюме:**";
   if (result.summary.includes(splitMarker)) {
