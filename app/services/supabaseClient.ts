@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 // for this MVP's, we will try to read them from env, or allow manual entry in settings.
-// Users must add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to their .env file.
+// users must add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to their .env file. if they are using supabase db
 
 
 const getEnv = (): Record<string, string> => {
