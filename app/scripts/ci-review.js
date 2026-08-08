@@ -4,10 +4,10 @@ import path from 'path';
 
 
 
-// Backend review API (Python + Ollama / Qwen)
+// backend review API (Python + ollama / qwen)
 const REVIEW_API_URL = process.env.REVIEW_API_URL || 'http://localhost:8000/review';
 
-// High-level style guide for CI reviews (can be overridden via env)
+// High-level style guide for CI reviews (can be overridden via env).
 const DEFAULT_STYLE_GUIDE = (process.env.CI_STYLE_GUIDE || `
 SEVERITY RULES:
 - CRITICAL: Hardcoded credentials, fatal logic errors (crashes, infinite loops), or major security issues.
@@ -20,7 +20,7 @@ STATUS RULES:
 - If no issues exist => status MUST be "APPROVE".
 `).trim();
 
-// Use provided credentials as default if env vars not present
+// use provided credential as default if env vars not present
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://innhtkqrvjqiuuetzxqh.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlubmh0a3FydmpxaXV1ZXR6eHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDk5NzgsImV4cCI6MjA4NTI4NTk3OH0.Q_QHP2LYQjAk0c2u3fijuiYNKlw4kqrW1UqGBxUMfnA';
 
@@ -245,7 +245,7 @@ async function sendTelegram(token, chatId, author, project, result, links = {}) 
     if (!res.ok) {
         const text = await res.text();
         console.error(` Telegram API Error (${res.status}):`, text);
-        // Retry logic for plain text if HTML fails (omitting buttons to be safe)
+        // retry logic for plain text if HTML fails (omitting buttons to be safe)
         if (text.includes("parse")) {
             console.log(" Retrying Telegram message as plain text...");
             delete body.parse_mode;

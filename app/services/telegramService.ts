@@ -1,4 +1,4 @@
-
+//exact
 import { ReviewResult, Severity, ExternalMR } from "../types";
 import { supabase } from "./supabaseClient";
 
@@ -11,7 +11,6 @@ export const sendReviewToTelegram = async (
 ) => {
   if (!chatId) return;
 
-  // --- 1. PREPARE METRICS & HELPERS ---
   const criticals = result.issues.filter(i => i.severity === Severity.CRITICAL).length;
   const warnings = result.issues.filter(i => i.severity === Severity.WARNING).length;
   const infos = result.issues.filter(i => i.severity === Severity.INFO).length;
@@ -26,7 +25,7 @@ export const sendReviewToTelegram = async (
       .replace(/'/g, "&#039;");
   };
 
-  // --- 2. EXTRACT RUSSIAN SUMMARY ---
+  // extract russian summary 
   let russianSummary = result.summary;
   const splitMarker = "🇷🇺 **Резюме:**";
   if (result.summary.includes(splitMarker)) {
@@ -39,13 +38,13 @@ export const sendReviewToTelegram = async (
   const safeAuthor = escapeHtml(author);
   const safeSummary = escapeHtml(russianSummary);
 
-  // --- 3. BUILD HEADER (Screenshot 1 Style) ---
+  // --- 3. builder header ---
   let headerText = `<b>${emojiStatus} WinSolution Review: ${safeProject}</b>\n\n`;
   headerText += `<b>Author:</b> ${safeAuthor}\n`;
   headerText += `<b>Status:</b> ${result.status}\n`;
   headerText += `<b>Score:</b> ${result.rating?.overall || 'N/A'}/100\n\n`;
   
-  // Russian Summary (placed before details as per Screenshot 1 style)
+  // Russian Summary 
   headerText += `<b>Резюме:</b>\n<i>${safeSummary}</i>\n\n`;
   
   headerText += `<b>Metrics:</b>\n`;
@@ -95,7 +94,7 @@ export const sendReviewToTelegram = async (
     }
   }
 
-  // --- 6. ADD LINKS (At Bottom) ---
+  // add links  (At Bottom) ---
   if (mrContext) {
       let linksBlock = `\n\n<b>🔗 Quick Links / Ссылки:</b>\n`;
       if (mrContext.url) {
