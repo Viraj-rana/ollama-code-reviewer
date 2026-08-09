@@ -157,7 +157,7 @@ export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Prom
         
         const projectPath = encodeURIComponent(match[1]);
         
-        // Fetch Diff
+        // fetch Diff
         const resDiff = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/diffs`, {
             headers: { "PRIVATE-TOKEN": token }
         });
