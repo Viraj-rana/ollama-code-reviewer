@@ -95,7 +95,6 @@ export const sendReviewToTelegram = async (
     }
   }
 
-  // add links  (At Bottom) ---
   if (mrContext) {
       let linksBlock = `\n\n<b>🔗 Quick Links / Ссылки:</b>\n`;
       if (mrContext.url) {
