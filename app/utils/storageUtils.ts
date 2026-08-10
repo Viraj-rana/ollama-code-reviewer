@@ -9,7 +9,7 @@ const HISTORY_STORAGE_KEY = 'review_history';
 const MAX_LOCALSTORAGE_SIZE = 5 * 1024 * 1024; // 5MB limit per entry in theory, but browser limit is ~10MB total
 
 /**
- * Safely save history to localStorage with compression/truncation if needed
+ * safely save history to localStorage with compression/truncation if needed
  */
 export const saveHistoryToLocalStorage = (history: HistoryEntry[]): boolean => {
   try {
