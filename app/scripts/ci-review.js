@@ -18,10 +18,9 @@ STATUS RULES:
 - If only WARNING or INFO issues exist => status SHOULD be "APPROVE".
 - If no issues exist => status MUST be "APPROVE".
 `).trim();
-
-// use provided credential as default if env vars not present
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://innhtkqrvjqiuuetzxqh.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlubmh0a3FydmpxaXV1ZXR6eHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDk5NzgsImV4cCI6MjA4NTI4NTk3OH0.Q_QHP2LYQjAk0c2u3fijuiYNKlw4kqrW1UqGBxUMfnA';
+//put your credentials here
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xyz.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || "your supabase key
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
