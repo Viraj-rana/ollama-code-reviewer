@@ -7,6 +7,7 @@ import path from 'path';
 // backend review API (Python + ollama / qwen)
 const REVIEW_API_URL = process.env.REVIEW_API_URL || 'http://localhost:8000/review';
 
+
 const DEFAULT_STYLE_GUIDE = (process.env.CI_STYLE_GUIDE || `
 SEVERITY RULES:
 - CRITICAL: Hardcoded credentials, fatal logic errors (crashes, infinite loops), or major security issues.
