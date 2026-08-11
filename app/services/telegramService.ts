@@ -166,7 +166,7 @@ export const sendReviewToTelegram = async (
              console.log(`Telegram chunk ${i+1}/${messages.length} sent.`);
          }
          
-         // Small delay to ensure Telegram receives them in order
+         // small delay to ensure Telegram receives them in order
          if (!isLast) await new Promise(r => setTimeout(r, 300));
     }
   } catch (e) {
