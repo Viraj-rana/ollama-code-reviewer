@@ -164,7 +164,7 @@ export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Prom
         const diffs = await resDiff.json();
         diff = diffs.map((d: any) => `--- a/${d.old_path}\n+++ b/${d.new_path}\n${d.diff}`).join('\n\n');
 
-        // Fetch Notes
+        // fetch notes
         const notesRes = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/notes?sort=asc`, {
             headers: { "PRIVATE-TOKEN": token }
         });
