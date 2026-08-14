@@ -86,7 +86,7 @@ async function run() {
         number: CI_MERGE_REQUEST_IID || "0",
         head: { repo: { name: CI_PROJECT_NAME || "gitlab-repo" } }
     };
-    // GitLab URL reconstruction
+    // gitLab URL reconstruction
     prUrl = process.env.CI_MERGE_REQUEST_URL || "";
     repoUrl = process.env.CI_PROJECT_URL || "";
     // Prefer Numeric ID for Telegram callback limit (64 bytes), fallback to name
