@@ -159,7 +159,7 @@ async function run() {
       console.log("Telegram skipped (Missing credentials)");
     }
 
-    // 5. Save to Supabase
+    // save to db
     console.log(" Saving to Database...");
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     
