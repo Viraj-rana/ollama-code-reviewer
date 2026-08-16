@@ -181,7 +181,7 @@ async function run() {
       console.log("✅ Saved successfully to Supabase!");
     }
 
-    // 6. CI Exit Logic
+    
     if (result.status === 'REQUEST_CHANGES') {
         console.error("🚨 CRITICAL issues detected. Failing pipeline.");
         process.exit(1);
