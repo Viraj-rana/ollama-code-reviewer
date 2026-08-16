@@ -1,4 +1,4 @@
-//main llm file
+//main llm function
 import { ReviewResult, ProjectAnalysisResult, ReviewIssue } from "../types";
 
 const API_BASE =
@@ -34,10 +34,9 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// --- MAIN EXPORTED FUNCTIONS ---
 
 export const analyzeCode = async (
-  styleGuide: string,
+    styleGuide: string,
   codeDiff: string,
   blockOnWarning: boolean
 ): Promise<ReviewResult> => {

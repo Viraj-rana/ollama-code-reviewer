@@ -2,10 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
-// --- CONFIGURATION ---
 
-// Backend review API (Python + Ollama / Qwen)
+
+
+// backend review API (Python + ollama / qwen)
 const REVIEW_API_URL = process.env.REVIEW_API_URL || 'http://localhost:8000/review';
+
 
 const DEFAULT_STYLE_GUIDE = (process.env.CI_STYLE_GUIDE || `
 SEVERITY RULES:
@@ -18,10 +20,9 @@ STATUS RULES:
 - If only WARNING or INFO issues exist => status SHOULD be "APPROVE".
 - If no issues exist => status MUST be "APPROVE".
 `).trim();
-
-// Use provided credentials as default if env vars not present
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://innhtkqrvjqiuuetzxqh.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlubmh0a3FydmpxaXV1ZXR6eHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDk5NzgsImV4cCI6MjA4NTI4NTk3OH0.Q_QHP2LYQjAk0c2u3fijuiYNKlw4kqrW1UqGBxUMfnA';
+//put your credentials here
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xyz.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || "your supabase key
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -85,7 +86,7 @@ async function run() {
         number: CI_MERGE_REQUEST_IID || "0",
         head: { repo: { name: CI_PROJECT_NAME || "gitlab-repo" } }
     };
-    // GitLab URL reconstruction
+    // gitLab URL reconstruction
     prUrl = process.env.CI_MERGE_REQUEST_URL || "";
     repoUrl = process.env.CI_PROJECT_URL || "";
     // Prefer Numeric ID for Telegram callback limit (64 bytes), fallback to name
@@ -158,7 +159,7 @@ async function run() {
       console.log("Telegram skipped (Missing credentials)");
     }
 
-    // 5. Save to Supabase
+    // save to db
     console.log(" Saving to Database...");
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     
@@ -180,7 +181,7 @@ async function run() {
       console.log("✅ Saved successfully to Supabase!");
     }
 
-    // 6. CI Exit Logic
+    
     if (result.status === 'REQUEST_CHANGES') {
         console.error("🚨 CRITICAL issues detected. Failing pipeline.");
         process.exit(1);
@@ -244,7 +245,7 @@ async function sendTelegram(token, chatId, author, project, result, links = {}) 
     if (!res.ok) {
         const text = await res.text();
         console.error(` Telegram API Error (${res.status}):`, text);
-        // Retry logic for plain text if HTML fails (omitting buttons to be safe)
+        // retry logic for plain text if HTML fails (omitting buttons to be safe)
         if (text.includes("parse")) {
             console.log(" Retrying Telegram message as plain text...");
             delete body.parse_mode;

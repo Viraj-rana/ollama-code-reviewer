@@ -29,10 +29,10 @@ export const verifyGitLabToken = async (token: string): Promise<boolean> => {
 export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: string | null): Promise<ExternalMR[]> => {
   let allMrs: ExternalMR[] = [];
 
-  // GitHub Fetch Logic: User -> Repos -> Pulls
+  // gitHub fetch logic: user  repos  pull
   if (githubToken) {
     try {
-      // Fetch user's repos (Limit to 20 recently updated to avoid browser rate limits)
+      // fetch user's repos (Limit to 20 recently updated to avoid browser rate limits)
       const reposRes = await fetch("https://api.github.com/user/repos?per_page=20&sort=updated&type=all", {
         headers: { Authorization: `token ${githubToken}` }
       });
@@ -40,7 +40,7 @@ export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: stri
       if (reposRes.ok) {
         const repos = await reposRes.json();
         
-        // Parallel fetch for open PRs in each repo
+        // parallel fetch for open PRs in each repo
         const prPromises = repos.map(async (repo: any) => {
           try {
             const pullsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/pulls?state=open`, {
@@ -76,7 +76,7 @@ export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: stri
     }
   }
 
-  // GitLab Fetch Logic: Projects -> Merge Requests
+  // gitLab Fetch Logic: Projects -> Merge Requests
   if (gitlabToken) {
     try {
       // Fetch projects where user is a member
@@ -132,7 +132,7 @@ export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Prom
     if (mr.platform === 'github') {
         const [owner, repo] = mr.repo.split('/');
         
-        // Fetch Diff
+        // Fetch Diff code
         const diffRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${mr.number}`, {
             headers: { 
                 Authorization: `token ${token}`, 
@@ -157,14 +157,14 @@ export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Prom
         
         const projectPath = encodeURIComponent(match[1]);
         
-        // Fetch Diff
+        // fetch Diff
         const resDiff = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/diffs`, {
             headers: { "PRIVATE-TOKEN": token }
         });
         const diffs = await resDiff.json();
         diff = diffs.map((d: any) => `--- a/${d.old_path}\n+++ b/${d.new_path}\n${d.diff}`).join('\n\n');
 
-        // Fetch Notes
+        // fetch notes
         const notesRes = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/notes?sort=asc`, {
             headers: { "PRIVATE-TOKEN": token }
         });
