@@ -25,7 +25,6 @@ ai_code_review:
     # 4. Run Analysis Script
     - node scripts/ci-review.js
   
-  # Ensure these variables are set in Settings > CI/CD > Variables
   variables:
     API_KEY: $GEMINI_API_KEY
     SUPABASE_URL: $SUPABASE_URL
