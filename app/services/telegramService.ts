@@ -152,7 +152,6 @@ export const sendReviewToTelegram = async (
              chatId: chatId,
              text: messages[i],
              parse_mode: 'HTML',
-             // Only attach buttons to the very last message
              reply_markup: isLast ? reply_markup : undefined
          };
 
