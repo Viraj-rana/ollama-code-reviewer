@@ -200,7 +200,7 @@ async function run() {
 async function sendTelegram(token, chatId, author, project, result, links = {}) {
   const emoji = result.status === 'APPROVE' ? '✅' : '❌';
   
-  // CRITICAL: Escape HTML characters to prevent 400 Bad Request errors
+  //  Escape HTML characters to prevent 400 Bad Request errors
   const safeProject = escapeHtml(project);
   const safeAuthor = escapeHtml(author);
   const safeSummary = escapeHtml(result.summary);
