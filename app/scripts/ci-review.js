@@ -38,7 +38,6 @@ const GITLAB_USER_LOGIN = process.env.GITLAB_USER_LOGIN;
 const CI_PROJECT_NAME = process.env.CI_PROJECT_NAME;
 const CI_PROJECT_ID = process.env.CI_PROJECT_ID; // Numeric ID is safer for callback_data limits
 
-// Helper to escape HTML characters for Telegram
 const escapeHtml = (unsafe) => {
   if (typeof unsafe !== 'string') return '';
   return unsafe
