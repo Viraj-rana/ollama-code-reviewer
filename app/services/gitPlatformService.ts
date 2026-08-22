@@ -78,7 +78,6 @@ export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: stri
 
   if (gitlabToken) {
     try {
-      // Fetch projects where user is a member
       const projectsRes = await fetch("https://gitlab.com/api/v4/projects?membership=true&per_page=20&order_by=updated_at", {
         headers: { "PRIVATE-TOKEN": gitlabToken }
       });
