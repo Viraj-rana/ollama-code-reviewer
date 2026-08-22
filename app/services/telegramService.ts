@@ -45,7 +45,6 @@ export const sendReviewToTelegram = async (
   headerText += `<b>Status:</b> ${result.status}\n`;
   headerText += `<b>Score:</b> ${result.rating?.overall || 'N/A'}/100\n\n`;
   
-  // Russian Summary 
   headerText += `<b>Резюме:</b>\n<i>${safeSummary}</i>\n\n`;
   
   headerText += `<b>Metrics:</b>\n`;
