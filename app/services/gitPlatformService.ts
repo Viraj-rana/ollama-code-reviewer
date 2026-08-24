@@ -40,7 +40,6 @@ export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: stri
       if (reposRes.ok) {
         const repos = await reposRes.json();
         
-        // parallel fetch for open PRs in each repo
         const prPromises = repos.map(async (repo: any) => {
           try {
             const pullsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/pulls?state=open`, {
