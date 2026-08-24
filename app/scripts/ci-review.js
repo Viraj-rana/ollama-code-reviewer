@@ -112,7 +112,6 @@ async function run() {
     codeDiff = codeDiff.substring(0, 45000) + "\n...[Truncated]";
   }
 
-  // 3. AI Analysis (via Python backend + Ollama / Qwen)
   console.log(" Analyzing with Qwen backend...");
 
   try {
