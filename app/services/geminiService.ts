@@ -26,7 +26,6 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
         message = data.detail;
       }
     } catch {
-      // ignore JSON parse errors and fall back to generic message
     }
     throw new Error(message);
   }
