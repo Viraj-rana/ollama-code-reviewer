@@ -1,4 +1,4 @@
-#test file for check the pipeline
+#test file for check the pipelines
 name: Run Tests
 
 on:
