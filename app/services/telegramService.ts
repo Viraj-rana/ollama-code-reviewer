@@ -11,7 +11,7 @@ export const sendReviewToTelegram = async (
 ) => {
   if (!chatId) return;
 
-  // --- 1. PREPARE METRICS & HELPERS ---
+
   const criticals = result.issues.filter(i => i.severity === Severity.CRITICAL).length;
   const warnings = result.issues.filter(i => i.severity === Severity.WARNING).length;
   const infos = result.issues.filter(i => i.severity === Severity.INFO).length;
@@ -26,7 +26,7 @@ export const sendReviewToTelegram = async (
       .replace(/'/g, "&#039;");
   };
 
-  // --- 2. EXTRACT RUSSIAN SUMMARY ---
+  // extract russian summary 
   let russianSummary = result.summary;
   const splitMarker = "🇷🇺 **Резюме:**";
   if (result.summary.includes(splitMarker)) {
@@ -39,13 +39,12 @@ export const sendReviewToTelegram = async (
   const safeAuthor = escapeHtml(author);
   const safeSummary = escapeHtml(russianSummary);
 
-  // --- 3. BUILD HEADER (Screenshot 1 Style) ---
+  // --- 3. builder header ---
   let headerText = `<b>${emojiStatus} WinSolution Review: ${safeProject}</b>\n\n`;
   headerText += `<b>Author:</b> ${safeAuthor}\n`;
   headerText += `<b>Status:</b> ${result.status}\n`;
   headerText += `<b>Score:</b> ${result.rating?.overall || 'N/A'}/100\n\n`;
   
-  // Russian Summary (placed before details as per Screenshot 1 style)
   headerText += `<b>Резюме:</b>\n<i>${safeSummary}</i>\n\n`;
   
   headerText += `<b>Metrics:</b>\n`;
@@ -95,7 +94,6 @@ export const sendReviewToTelegram = async (
     }
   }
 
-  // --- 6. ADD LINKS (At Bottom) ---
   if (mrContext) {
       let linksBlock = `\n\n<b>🔗 Quick Links / Ссылки:</b>\n`;
       if (mrContext.url) {
@@ -153,7 +151,6 @@ export const sendReviewToTelegram = async (
              chatId: chatId,
              text: messages[i],
              parse_mode: 'HTML',
-             // Only attach buttons to the very last message
              reply_markup: isLast ? reply_markup : undefined
          };
 
@@ -167,7 +164,7 @@ export const sendReviewToTelegram = async (
              console.log(`Telegram chunk ${i+1}/${messages.length} sent.`);
          }
          
-         // Small delay to ensure Telegram receives them in order
+         // small delay to ensure Telegram receives them in order
          if (!isLast) await new Promise(r => setTimeout(r, 300));
     }
   } catch (e) {

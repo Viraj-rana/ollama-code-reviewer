@@ -1,4 +1,4 @@
-//main llm file
+//main llm function
 import { ReviewResult, ProjectAnalysisResult, ReviewIssue } from "../types";
 
 const API_BASE =
@@ -26,7 +26,6 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
         message = data.detail;
       }
     } catch {
-      // ignore JSON parse errors and fall back to generic message
     }
     throw new Error(message);
   }
@@ -36,7 +35,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 
 
 export const analyzeCode = async (
-  styleGuide: string,
+    styleGuide: string,
   codeDiff: string,
   blockOnWarning: boolean
 ): Promise<ReviewResult> => {

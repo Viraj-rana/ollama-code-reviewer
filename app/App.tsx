@@ -1,4 +1,4 @@
-//mainapp
+//mainapp systems
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   AlertTriangleIcon, 
@@ -36,12 +36,12 @@ import { saveHistoryToLocalStorage, loadHistoryFromLocalStorage, validateHistory
 
 /** 
  * INTERNAL SYSTEM CONFIGURATION
- * SECURITY UPDATE: Bot Token removed. It is now stored securely in Supabase Secrets.
+ * SECURITY UPDATE: Bot token removed. It is now stored securely in Supabase Secrets.
  */
-const DEFAULT_SYSTEM_AUTHOR = 'HE009999';
+const DEFAULT_SYSTEM_AUTHOR = 'usernametg';
 const TELEGRAM_CONFIG = {
-  chatId: '-1003841579486', // Publicly knowing the destination channel ID is generally safe
-  enabled: true
+  chatId: '-000000000', // Publicly knowing the destination channel ID is generally safe
+  enabled: false //make it true with real keys
 };
 
 const HistoryIcon = ({ className }: { className?: string }) => (
@@ -141,7 +141,7 @@ const App: React.FC = () => {
     localStorage.setItem('winsolution_language', isRussian ? 'ru' : 'en');
   }, [isRussian]);
 
-  // Translation helper
+  // Translation function helper
   const t = (en: string, ru: string) => isRussian ? ru : en;
 
   useEffect(() => {
