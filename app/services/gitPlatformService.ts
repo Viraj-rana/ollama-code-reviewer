@@ -138,7 +138,6 @@ export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Prom
         });
         diff = await diffRes.text();
 
-        // Fetch Comments for context
         const commentsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${mr.number}/comments`, {
             headers: { 
                 Authorization: `token ${token}`, 
