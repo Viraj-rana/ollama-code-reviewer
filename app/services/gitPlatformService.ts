@@ -1,18 +1,27 @@
-
 import { ExternalMR } from "../types";
+
+interface GitHubRepo { owner: { login: string }; name: string; full_name: string; }
+interface GitHubPR { id: string; number: number; title: string; user?: { login: string; avatar_url: string }; created_at: string; html_url: string; head: { ref: string }; base: { ref: string }; }
+interface GitLabProject { id: string; path_with_namespace: string; }
+interface GitLabMR { id: string; iid: number; title: string; author: { username: string; avatar_url: string }; created_at: string; web_url: string; source_branch: string; target_branch: string; }
+
+const apiRequest = async <T>(url: string, options: RequestInit): Promise<T | null> => {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+};
 
 export const verifyGitHubToken = async (token: string): Promise<boolean> => {
   try {
     const res = await fetch("https://api.github.com/user", {
-      headers: { 
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json'
-      }
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
     });
     return res.ok;
-  } catch (e) {
-    return false;
-  }
+  } catch { return false; }
 };
 
 export const verifyGitLabToken = async (token: string): Promise<boolean> => {
@@ -21,154 +30,105 @@ export const verifyGitLabToken = async (token: string): Promise<boolean> => {
       headers: { "PRIVATE-TOKEN": token }
     });
     return res.ok;
-  } catch (e) {
-    return false;
-  }
+  } catch { return false; }
 };
 
 export const fetchOpenMrs = async (githubToken: string | null, gitlabToken: string | null): Promise<ExternalMR[]> => {
   let allMrs: ExternalMR[] = [];
 
-  // gitHub fetch logic: user  repos  pull
   if (githubToken) {
-    try {
-main
-      const reposRes = await fetch("https://api.github.com/user/repos?per_page=20&sort=updated&type=all", {
-        headers: { Authorization: `token ${githubToken}` }
-      });
-      
-      if (reposRes.ok) {
-        const repos = await reposRes.json();
-        
-        const prPromises = repos.map(async (repo: any) => {
-          try {
-            const pullsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/pulls?state=open`, {
-              headers: { Authorization: `token ${githubToken}` }
-            });
-            if (pullsRes.ok) {
-              const pulls = await pullsRes.json();
-              return pulls.map((p: any) => ({
-                id: String(p.id),
-                number: p.number,
-                title: p.title,
-                author: p.user?.login || 'unknown',
-                authorAvatar: p.user?.avatar_url,
-                createdAt: p.created_at,
-                url: p.html_url,
-                sourceBranch: p.head.ref,
-                targetBranch: p.base.ref,
-                platform: 'github',
-                repo: repo.full_name
-              }));
-            }
-          } catch (e) {
-            console.warn(`Failed to fetch PRs for ${repo.full_name}`, e);
-          }
-          return [];
-        });
+    const repos = await apiRequest<GitHubRepo[]>("https://api.github.com/user/repos?per_page=20&sort=updated&type=all", {
+      headers: { Authorization: `token ${githubToken}` }
+    });
 
-        const results = await Promise.all(prPromises);
-        allMrs = [...allMrs, ...results.flat()];
-      }
-    } catch (e) {
-      console.error("GitHub Fetch Error", e);
+    if (repos) {
+      const prPromises = repos.map(async (repo) => {
+        const pulls = await apiRequest<GitHubPR[]>(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/pulls?state=open`, {
+          headers: { Authorization: `token ${githubToken}` }
+        });
+        return pulls?.map((p) => ({
+          id: String(p.id),
+          number: p.number,
+          title: p.title,
+          author: p.user?.login || 'unknown',
+          authorAvatar: p.user?.avatar_url,
+          createdAt: p.created_at,
+          url: p.html_url,
+          sourceBranch: p.head.ref,
+          targetBranch: p.base.ref,
+          platform: 'github',
+          repo: repo.full_name
+        })) || [];
+      });
+
+      const results = await Promise.allSettled(prPromises);
+      allMrs.push(...results.filter(r => r.status === 'fulfilled').map(r => (r as PromiseFulfilledResult<ExternalMR[]>).value).flat());
     }
   }
 
   if (gitlabToken) {
-    try {
-      const projectsRes = await fetch("https://gitlab.com/api/v4/projects?membership=true&per_page=20&order_by=updated_at", {
-        headers: { "PRIVATE-TOKEN": gitlabToken }
+    const projects = await apiRequest<GitLabProject[]>("https://gitlab.com/api/v4/projects?membership=true&per_page=20&order_by=updated_at", {
+      headers: { "PRIVATE-TOKEN": gitlabToken }
+    });
+
+    if (projects) {
+      const mrPromises = projects.map(async (project) => {
+        const mrs = await apiRequest<GitLabMR[]>(`https://gitlab.com/api/v4/projects/${project.id}/merge_requests?state=opened`, {
+          headers: { "PRIVATE-TOKEN": gitlabToken }
+        });
+        return mrs?.map((m) => ({
+          id: String(m.id),
+          number: m.iid,
+          title: m.title,
+          author: m.author.username,
+          authorAvatar: m.author.avatar_url,
+          createdAt: m.created_at,
+          url: m.web_url,
+          sourceBranch: m.source_branch,
+          targetBranch: m.target_branch,
+          platform: 'gitlab',
+          repo: project.path_with_namespace
+        })) || [];
       });
 
-      if (projectsRes.ok) {
-        const projects = await projectsRes.json();
-        
-        const mrPromises = projects.map(async (project: any) => {
-            try {
-                const mrsRes = await fetch(`https://gitlab.com/api/v4/projects/${project.id}/merge_requests?state=opened`, {
-                    headers: { "PRIVATE-TOKEN": gitlabToken }
-                });
-                if (mrsRes.ok) {
-                    const mrs = await mrsRes.json();
-                    return mrs.map((m: any) => ({
-                        id: String(m.id),
-                        number: m.iid,
-                        title: m.title,
-                        author: m.author.username,
-                        authorAvatar: m.author.avatar_url,
-                        createdAt: m.created_at,
-                        url: m.web_url,
-                        sourceBranch: m.source_branch,
-                        targetBranch: m.target_branch,
-                        platform: 'gitlab',
-                        repo: project.path_with_namespace
-                    }));
-                }
-            } catch (e) {
-                console.warn(`Failed to fetch MRs for ${project.path_with_namespace}`, e);
-            }
-            return [];
-        });
-
-        const results = await Promise.all(mrPromises);
-        allMrs = [...allMrs, ...results.flat()];
-      }
-    } catch (e) {
-       console.error("GitLab Fetch Error", e);
+      const results = await Promise.allSettled(mrPromises);
+      allMrs.push(...results.filter(r => r.status === 'fulfilled').map(r => (r as PromiseFulfilledResult<ExternalMR[]>).value).flat());
     }
   }
-  
+
   return allMrs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
 export const fetchMergeRequestDiff = async (mr: ExternalMR, token: string): Promise<{ diff: string, context: string }> => {
-    let diff = "";
-    let context = "";
+  let diff = "";
+  let context = "";
 
-    if (mr.platform === 'github') {
-        const [owner, repo] = mr.repo.split('/');
-        
-        // Fetch Diff code
-        const diffRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${mr.number}`, {
-            headers: { 
-                Authorization: `token ${token}`, 
-                Accept: 'application/vnd.github.v3.diff' 
-            }
-        });
-        diff = await diffRes.text();
+  if (mr.platform === 'github') {
+    const [owner, repo] = mr.repo.split('/');
+    
+    const diffRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${mr.number}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3.diff' }
+    });
+    diff = await diffRes.text();
 
-        const commentsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${mr.number}/comments`, {
-            headers: { 
-                Authorization: `token ${token}`, 
-                Accept: 'application/vnd.github.v3+json' 
-            }
-        });
-        const comments = await commentsRes.json();
-        context = Array.isArray(comments) ? comments.map((c: any) => `${c.user.login}: ${c.body}`).join('\n---\n') : '';
+    const comments = await apiRequest<any[]>(`https://api.github.com/repos/${owner}/${repo}/issues/${mr.number}/comments`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    context = comments?.map((c) => `${c.user.login}: ${c.body}`).join('\n---\n') || '';
 
-    } else if (mr.platform === 'gitlab') {
-        const match = mr.url.match(/gitlab\.com\/(.+?)\/-\/merge_requests\/(\d+)/);
-        if (!match) throw new Error("Could not parse GitLab project ID from URL");
-        
-        const projectPath = encodeURIComponent(match[1]);
-        
-        // fetch Diff
-        const resDiff = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/diffs`, {
-            headers: { "PRIVATE-TOKEN": token }
-        });
-        const diffs = await resDiff.json();
-        diff = diffs.map((d: any) => `--- a/${d.old_path}\n+++ b/${d.new_path}\n${d.diff}`).join('\n\n');
+  } else if (mr.platform === 'gitlab') {
+    const projectPath = encodeURIComponent(mr.repo);
+    
+    const diffs = await apiRequest<any[]>(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/diffs`, {
+      headers: { "PRIVATE-TOKEN": token }
+    });
+    diff = diffs?.map((d) => `--- a/${d.old_path}\n+++ b/${d.new_path}\n${d.diff}`).join('\n\n') || '';
 
-        // fetch notes
-        const notesRes = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/notes?sort=asc`, {
-            headers: { "PRIVATE-TOKEN": token }
-        });
-        if (notesRes.ok) {
-            const notes = await notesRes.json();
-            context = Array.isArray(notes) ? notes.filter((n: any) => !n.system).map((n: any) => `${n.author.username}: ${n.body}`).join('\n---\n') : '';
-        }
-    }
+    const notes = await apiRequest<any[]>(`https://gitlab.com/api/v4/projects/${projectPath}/merge_requests/${mr.number}/notes?sort=asc`, {
+      headers: { "PRIVATE-TOKEN": token }
+    });
+    context = notes?.filter((n) => !n.system).map((n) => `${n.author.username}: ${n.body}`).join('\n---\n') || '';
+  }
 
-    return { diff, context };
+  return { diff, context };
 }
