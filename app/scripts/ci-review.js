@@ -19,7 +19,6 @@ STATUS RULES:
 - If only WARNING or INFO issues exist => status SHOULD be "APPROVE".
 - If no issues exist => status MUST be "APPROVE".
 `).trim();
-//put your credentials here
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xyz.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || "your supabase key
 
