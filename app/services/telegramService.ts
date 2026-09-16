@@ -7,7 +7,7 @@ const REPO_HOSTS: Record<string, string> = {
   github: "https://github.com",
   gitlab: "https://gitlab.com",
 };
-
+//
 const SEVERITY_ICON: Record<Severity, string> = {
   [Severity.CRITICAL]: "🚨",
   [Severity.WARNING]: "⚠️",
