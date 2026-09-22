@@ -25,7 +25,6 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY || "your supabase key
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-// GitHub Actions Context
 const GITHUB_EVENT_PATH = process.env.GITHUB_EVENT_PATH;
 
 // GitLab CI Context
