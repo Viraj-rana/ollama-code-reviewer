@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const getEnv = (): Record<string, string> => {
   try {
-    // @ts-ignore - import.meta.env is Vite-specific
     return import.meta.env || {};
   } catch (e) {
    return {};
