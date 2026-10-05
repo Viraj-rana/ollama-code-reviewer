@@ -90,7 +90,6 @@ async function run() {
     console.log(` Processing GitLab MR #${prData.number}: ${prData.title}`);
   }
 
-  // 2. Read Code Diff (In CI, we assume 'git diff' output is piped or fetched)
   let codeDiff = "";
   try {
     codeDiff = fs.readFileSync('pr_diff.txt', 'utf8');
