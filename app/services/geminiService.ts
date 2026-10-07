@@ -67,7 +67,7 @@ export const translateReviewResult = async (
     targetLang,
   });
 };
-
+//generate fix
 export const generateFix = async (
   styleGuide: string,
   originalContext: string,
