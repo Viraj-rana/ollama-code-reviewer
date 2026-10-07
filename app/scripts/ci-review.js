@@ -27,7 +27,6 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 const GITHUB_EVENT_PATH = process.env.GITHUB_EVENT_PATH;
 
-// GitLab CI Context
 const GITLAB_CI = process.env.GITLAB_CI;
 const CI_MERGE_REQUEST_TITLE = process.env.CI_MERGE_REQUEST_TITLE;
 const CI_MERGE_REQUEST_IID = process.env.CI_MERGE_REQUEST_IID;
