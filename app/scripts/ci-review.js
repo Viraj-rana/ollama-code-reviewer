@@ -55,7 +55,7 @@ async function run() {
   let prUrl = "";
   let repoUrl = "";
   let platform = "unknown";
-  let projectId = ""; // Used for ChatOps
+  let projectId = ""; // 
 
   if (GITHUB_EVENT_PATH) {
     platform = "github";
